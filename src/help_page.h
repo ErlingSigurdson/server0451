@@ -1,33 +1,24 @@
-/****************** DESCRIPTION *****************/
+/******************* ОПИСАНИЕ *******************/
 
 /**
- * Filename: help_page.h
- * ---------------------------------------------------------------------------------------------------------------------
- * Purpose: help page contents.
- * ---------------------------------------------------------------------------------------------------------------------
- * Notes:
+ * Имя файла: help_page.h
+ * ----------------------------------------------------------------------------|---------------------------------------|
+ * Назначение: содержимое страницы с подсказками для пользователя..
+ * ----------------------------------------------------------------------------|---------------------------------------|
+ * Примечания:
  */
 
 
-/************ PREPROCESSOR DIRECTIVES ***********/
+/************ ДИРЕКТИВЫ ПРЕПРОЦЕССОРА ***********/
 
-// Include guards.
-
+// Директива защиты от повторного включения заголовочного файла.
 #ifndef HELP_PAGE_H
 #define HELP_PAGE_H
 
-
-/*--- INCLUDES ---*/
-
-// None.
-
-
-/*--- MISC ---*/
-
 #define PRINT_HELP_PAGE                                                                                    \
-puts("Simple TCP server for IoT written in C language, v.1.0");                                            \
+puts("Simple TCP server for IoT written in C language.");                                                  \
 puts("Usage (start server): server0451 -p port -f file_path [other_options]");                             \
-puts("Example: server0451 -p 80 -f /home/my_user_name/server0451_cmd_configs.txt -v");                     \
+puts("Example: server0451 -p 80 -f /home/my_user_name/configs_server0451 -v");                             \
 puts("");                                                                                                  \
 puts("Options:");                                                                                          \
 puts("    -p <port>       specify a port to listen (mandatory option).");                                  \
@@ -40,7 +31,7 @@ puts("Server listens to TCP/IP connections (including ones established for HTTP 
 puts("according to TCP/IP message (including HTTP request) contents.");                                    \
 puts("");                                                                                                  \
 puts("Server works as a broker that allows for control over remote IoT devices with TCP/IP");              \
-puts("messaging capability which control simple ON/OFF loads like relays.");                               \
+puts("messaging capability which control simple ON/OFF loads like LEDSs, relays, etc.");                   \
 puts(""); 																						           \
 puts("Server stores currently prescribed load status (1 or 0, ON or OFF) in a command configuration");     \
 puts("file alongside with substrings which, upon being found in incoming TCP/IP messages");                \
@@ -58,7 +49,7 @@ puts("For continuous listening run a shell script:");                           
 puts(" ----------------------------------------------------------------------------------------------");   \
 puts("|#! /bin/bash                                                                                  |");  \
 puts("|                                                                                              |");  \
-puts("|while true; do sudo server0451 -p 80 -f /home/my_user_name/server0451_cmd_configs.txt; done & |");  \
+puts("|while true; do sudo server0451 -p 80 -f /home/my_user_name/configs_server0451; done & |");          \
 puts(" ----------------------------------------------------------------------------------------------");   \
 puts("This approach provides more reliable socket closing than C library functions do on their own.");     \
 puts("");                                                                                                  \
@@ -68,8 +59,8 @@ puts("in case one of them becomes blocked by another application.");            
 puts(" -----------------------------------------------------------------------------------------------");  \
 puts("|#! /bin/bash                                                                                   |"); \
 puts("|                                                                                               |"); \
-puts("|while true; do sudo server0451 -p 80 -f /home/my_user_name/server0451_cmd_configs.txt; done &  |"); \
-puts("|while true; do sudo server0451 -p 451 -f /home/my_user_name/server0451_cmd_configs.txt; done & |"); \
+puts("|while true; do sudo server0451 -p 80 -f /home/my_user_name/configs_server0451; done &  |");         \
+puts("|while true; do sudo server0451 -p 451 -f /home/my_user_name/configs_server0451; done & |");         \
 puts(" -----------------------------------------------------------------------------------------------");  \
 puts("");																						           \
 puts("If you want to control separate groups of IoT devices which are not supposed to update and read");   \
@@ -79,4 +70,4 @@ puts("done with port numbers also separated for different IoT devices flocks, bu
 puts("a single port as well.");																	           \
 
 
-#endif  // Closing directive of the include guards.
+#endif  // Завершающая директива защиты от повторного включения заголовочного файла.

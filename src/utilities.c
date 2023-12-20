@@ -1,42 +1,25 @@
-/****************** DESCRIPTION *****************/
+/******************* ОПИСАНИЕ *******************/
 
 /**
- * Filename: utilities.c
- * ---------------------------------------------------------------------------------------------------------------------
- * Purpose: some general purpose macros and function..
- * ---------------------------------------------------------------------------------------------------------------------
- * Notes:
+ * Имя файла: utilities.cpp
+ * ----------------------------------------------------------------------------|---------------------------------------|
+ * Назначение: некоторые вспомогательные макросы и функции.
+ * ----------------------------------------------------------------------------|---------------------------------------|
+ * Примечания:
  */
 
 
-/************ PREPROCESSOR DIRECTIVES ***********/
+/************ ДИРЕКТИВЫ ПРЕПРОЦЕССОРА ***********/
 
-/*--- INCLUDES ---*/
+/*--- Включения ---*/
 
-// Standard.
-#include <stdio.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-
-// Special.
-#include <unistd.h>  // readlink()
-
-// Local modules.
+// Локальные модули.
 #include "utilities.h"
 
-// Local configs.
-// None.
 
+/******************** ФУНКЦИИ *******************/
 
-/*--- MISC ---*/
-
-// None.
-
-
-/******************* FUNCTIONS ******************/
-
-/*--- Strings and stuff ---*/
+/*--- Работа со строками ---*/
 
 bool utilities_remove_CR_and_LF(char *buf)
 {
@@ -51,11 +34,12 @@ bool utilities_remove_CR_and_LF(char *buf)
     return 0;
 }
 
-bool utilities_append_CR_and_LF(char *buf, size_t bufsize)
+bool utilities_append_CR_and_LF(char *buf, size_t buf_size)
 {
-    if (bufsize - strlen(buf) >= 3) {  // One byte for CR, another byte for LF and third byte for a null terminator.
+    if (buf_size - strlen(buf) >= 3) {  // Один байт для CR, второй для LF, третий для нуля.
         buf[strlen(buf)] = '\r';
         buf[strlen(buf)] = '\n';
+        buf[strlen(buf)] = '\0';
 
         return 1;
     }
@@ -63,12 +47,24 @@ bool utilities_append_CR_and_LF(char *buf, size_t bufsize)
     return 0;
 }
 
-bool utilities_append_LF_if_absent(char *buf, size_t bufsize)
+bool utilities_append_LF(char *buf, size_t buf_size)
+{
+    if (buf_size - strlen(buf) >= 2) {  // Один байт для LF, второй для нуля.
+        buf[strlen(buf)] = '\n';
+        buf[strlen(buf)] = '\0';
+
+        return 1;
+    }
+
+    return 0;
+}
+
+bool utilities_append_LF_if_absent(char *buf, size_t buf_size)
 {
     if (strrchr(buf, '\n') == &buf[strlen(buf) - 1]) {
         return 0;
-    } else if (bufsize - strlen(buf) >= 2) {
-        buf[strlen(buf)] = '\n';
+    } else if (buf_size - strlen(buf) >= 2) {  // Один байт для LF, второй для нуля.
+        utilities_append_LF(buf, buf_size);
 
         return 1;
     }
@@ -76,38 +72,22 @@ bool utilities_append_LF_if_absent(char *buf, size_t bufsize)
     return 0;
 }
 
-bool utilities_force_2xLF(char *buf, size_t bufsize)
+bool utilities_force_2xLF(char *buf, size_t buf_size)
 {
-    char *ptr = &buf[strlen(buf) - 4];  // Check last four bytes.
-
-	uint32_t LF_erased = 0;
-    for (uint32_t i = 0; i < 4; ++i) {
-        if (ptr[i] == '\n') {
-            ptr[i] = '\0';
-            ++LF_erased;
-        }
-
-        if (ptr[i] == '\r') {
-        	ptr[i] = '\0';
-        }
-    }
-
-    if (bufsize - strlen(buf) >= 3) {  // Two bytes for two LFs and third byte for a null terminator.
+    utilities_remove_CR_and_LF(buf);
+    if (buf_size - strlen(buf) >= 3) {  // Два байта для LF, третий для нуля.
         buf[strlen(buf)] = '\n';
         buf[strlen(buf)] = '\n';
+        buf[strlen(buf)] = '\0';
 
         return 1;
-    } else {
-    	for (uint32_t i = 0; i < LF_erased; ++i) {
-    		buf[strlen(buf)] = '\n';
-    	}
     }
 
     return 0;
 }
 
 
-/*--- Files and stuff ---*/
+/*--- Работа с файлами ---*/
 
 void utilities_write_to_file_single_line(char *str, char *file_path)
 {
@@ -116,7 +96,7 @@ void utilities_write_to_file_single_line(char *str, char *file_path)
     fclose(f);
 }
 
-// No size safety! Note buffer size!
+// Без защиты от переполнения буфера!
 void utilities_read_from_file_single_line(char *buf, size_t bufsize, char *file_path)
 {
     FILE *f = fopen(file_path, "r");

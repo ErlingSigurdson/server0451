@@ -1,49 +1,31 @@
-/****************** DESCRIPTION *****************/
+/******************* ОПИСАНИЕ *******************/
 
 /**
- * Filename: cmd.c
- * ---------------------------------------------------------------------------------------------------------------------
- * Purpose: command handling macros and functions.
- * ---------------------------------------------------------------------------------------------------------------------
- * Notes:
+ * Имя файла: cmd.c
+ * ----------------------------------------------------------------------------|---------------------------------------|
+ * Назначение: функции и макросы для обработки команд.
+ * ----------------------------------------------------------------------------|---------------------------------------|
+ * Примечания:
  */
 
 
-/************ PREPROCESSOR DIRECTIVES ***********/
+/************ ДИРЕКТИВЫ ПРЕПРОЦЕССОРА ***********/
 
-/*--- INCLUDES ---*/
+/*--- Включения ---*/
 
-// Standard.
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-
-// Special.
-// None.
-
-// Local modules.
+// Локальные модули.
 #include "cmd.h"
 #include "utilities.h"
 
-// Local configs.
-// None.
 
-
-/*--- MISC ---*/
-
-// None.
-
-
-/******************* FUNCTIONS ******************/
+/******************** ФУНКЦИИ *******************/
 
 void cmd_file_read_else_write_defaults(char cmd_file_contents[CMD_FILE_LIST_LEN][STR_MAX_LEN], char *cmd_file_path)
 {
     FILE *f = fopen(cmd_file_path, "r");
 
     if (f == NULL) {
-        f = fopen(cmd_file_path, "w");
+        f = fopen("./configs_server0451", "w");
         fputs(DEFAULT_CMD_FILE_COMMENT_1, f);
         fputs(DEFAULT_CMD_FILE_CURRENT_CMD, f);
         fputs(DEFAULT_CMD_FILE_COMMENT_2, f);
@@ -91,7 +73,6 @@ void cmd_file_read_else_write_defaults(char cmd_file_contents[CMD_FILE_LIST_LEN]
         exit(0);
     }
 
-	// This block of code made function cmd_file_get_current_load_status_cmd() virtually unnecessary...
     for (uint32_t i = 0; i < CMD_FILE_LIST_LEN; ++i) {
         strcpy(cmd_file_contents[i], strchr(cmd_file_contents[i], '=') + 1);
         utilities_remove_CR_and_LF(cmd_file_contents[i]);
@@ -113,30 +94,4 @@ void cmd_file_update_current_load_status_cmd(char *cmd_file_path, bool load_stat
 	}
 
 	fclose(f);
-}
-
-// ...but I kept it nevertheless just in case.
-bool cmd_file_get_current_load_status_cmd(char *current_load_status_cmd_str)
-{
-	char *ptr = strchr(current_load_status_cmd_str, '=');
-
-	if (ptr == NULL) {
-        printf("Error reading command configuration file contents.\n");
-        printf("For a reference insert \"/home/my_user_name/default_dummy.txt\"\n");
-        printf("as an -f option argument and follow new file's format and pattern.");
-        exit(0);
-	}
-	
-	++ptr;
-
-	if (*ptr - '0' > 0) {
-		return 1;
-	} else if (*ptr - '0' == 0) {
-		return 0;
-	} else {
-        printf("Error reading command configuration file contents.\n");
-        printf("For a reference insert \"/home/my_user_name/default_dummy.txt\"\n");
-        printf("as an -f option argument and follow new file's format and pattern.");
-        exit(0);
-	}
 }

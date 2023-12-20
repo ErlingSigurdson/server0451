@@ -1,7 +1,7 @@
 #! /bin/bash
 
 EXEC_FILEPATH="../bin/execute_server0451"
-CONFIG_FILEPATH="../bin/configs_server0451"
+CONFIG_FILEPATH="./configs_server0451"
 
 while true
 do
