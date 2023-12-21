@@ -3,8 +3,8 @@
 /**
  * Имя файла: main.c
  * ----------------------------------------------------------------------------|---------------------------------------|
- * Назначение: основной файл кода простого TCP-сервера для Linux,
- * написанного на языке C.
+ * Назначение: основной файл с исходным кодом простого TCP-сервера для Linux,
+ * написанным на языке C.
  * ----------------------------------------------------------------------------|---------------------------------------|
  * Примечания:
  */
@@ -15,12 +15,13 @@
 /*--- Включения ---*/
 
 // Настройки проекта.
-#include "HTTP_config.h"
-#include "help_page.h"
+#include "config_general.h"
+#include "config_HTTP.h"
 
 // Локальные модули.
 #include "utilities.h"
 #include "cmd.h"
+#include "help_page.h"
 
 // Стандартная библиотека языка C.
 #include <stdio.h>
@@ -43,7 +44,7 @@
 // Обработчик опций командной строки и их аргументов.
 void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_path, uint32_t *verbosity_level);
 
-// Проверка упоминания HTTP в строке.
+// Проверка упоминания HTTP.
 bool HTTP_is_mentioned(char *buf);
 
 // Обработка входящих команд.
@@ -77,7 +78,7 @@ int main(int32_t argc, char *argv[])
     int32_t sockfd, connfd, len;
     struct sockaddr_in servaddr, cli;
 
-    // Создание сокета..
+    // Создание сокета.
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
         printf("\nSocket creation failed. Terminating the program.\n");
@@ -241,16 +242,16 @@ void cmd_handler(int32_t connfd, char *cmd_file_path, uint32_t verbosity_level)
 
 	// Поиск команды в поступившем от клиента сообщении.
     bool is_setloadon = strstr(buf, cmd_file_contents[CMD_FILE_ASCII_CMD_ON]) ||         \
-                        strstr(buf, cmd_file_contents[CMD_FILE_URI_CMD_ON]  ) ||         \
-                        strstr(buf, cmd_file_contents[CMD_FILE_VAL_CMD_ON]  ) ;
+                        strstr(buf, cmd_file_contents[CMD_FILE_URI_CMD_ON])   ||         \
+                        strstr(buf, cmd_file_contents[CMD_FILE_VAL_CMD_ON]) ;
 
     bool is_setloadoff = strstr(buf, cmd_file_contents[CMD_FILE_ASCII_CMD_OFF]) ||       \
-                         strstr(buf, cmd_file_contents[CMD_FILE_URI_CMD_OFF]  ) ||       \
-                         strstr(buf, cmd_file_contents[CMD_FILE_VAL_CMD_OFF]  ) ;
+                         strstr(buf, cmd_file_contents[CMD_FILE_URI_CMD_OFF])   ||       \
+                         strstr(buf, cmd_file_contents[CMD_FILE_VAL_CMD_OFF]) ;
 
     bool is_setloadtoggle = strstr(buf, cmd_file_contents[CMD_FILE_ASCII_CMD_TOGGLE]) || \
-                            strstr(buf, cmd_file_contents[CMD_FILE_URI_CMD_TOGGLE]  ) || \
-                            strstr(buf, cmd_file_contents[CMD_FILE_VAL_CMD_TOGGLE]  ) ;
+                            strstr(buf, cmd_file_contents[CMD_FILE_URI_CMD_TOGGLE])   || \
+                            strstr(buf, cmd_file_contents[CMD_FILE_VAL_CMD_TOGGLE]) ;
 
     bool is_request = strstr(buf, cmd_file_contents[CMD_FILE_REQUEST_CMD]);
 
@@ -331,7 +332,7 @@ void cmd_handler(int32_t connfd, char *cmd_file_path, uint32_t verbosity_level)
     }
 
 	/* Программа доходит до этой точки только в случае, если в сообщении
-	 * от клиента не было найдено ни одной корректной. команды.
+	 * от клиента не было найдено ни одной корректной команды.
 	 */
     if (verbosity_level > 0) {
         printf("No valid command received.\n");

@@ -11,27 +11,26 @@
 
 /************ ДИРЕКТИВЫ ПРЕПРОЦЕССОРА ***********/
 
-// Директива защиты от повторного включения заголовочного файла.
+// Защита от повторного включения заголовочного файла.
 #ifndef CMD_H
 #define CMD_H
 
+
 /*--- Включения ---*/
 
+// Настройки проекта.
+#include "config_general.h"
+
 // Стандартная библиотека языка C.
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
 #include <stdbool.h>
-#include <string.h>
 
 
 /*--- Прочее ---*/
 
-// Основные параметры.
-#define STR_MAX_LEN 1000
+// Длина списка команд.
 #define CMD_FILE_LIST_LEN 11
 
-// Нумерация команд.
+// Нумерация команд в списке.
 #define CMD_FILE_CURRENT_CMD      0
 #define CMD_FILE_ASCII_CMD_ON     1
 #define CMD_FILE_URI_CMD_ON       2
@@ -44,7 +43,7 @@
 #define CMD_FILE_VAL_CMD_TOGGLE   9
 #define CMD_FILE_REQUEST_CMD      10
 
-// Устанавливаемое по умолчанию содержимое файла с настройками обработки команд.
+// Устанавливаемое по умолчанию содержимое файла с настройками команд.
 #define DEFAULT_CMD_FILE_COMMENT_1   	  "// Текущее предписываемое положение нагрузки для данного экземпляра программы.\n"
 #define DEFAULT_CMD_FILE_CURRENT_CMD  	  "CURRENT_CMD=0\n"
 

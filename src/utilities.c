@@ -96,21 +96,20 @@ void utilities_write_to_file_single_line(char *str, char *file_path)
     fclose(f);
 }
 
-// Без защиты от переполнения буфера!
-void utilities_read_from_file_single_line(char *buf, size_t bufsize, char *file_path)
+void utilities_read_from_file_single_line(char *buf, size_t buf_size, char *file_path)
 {
     FILE *f = fopen(file_path, "r");
-    fgets(buf, bufsize, f);
+    fgets(buf, buf_size, f);
     fclose(f);
 }
 
-void utilities_read_from_file(char *buf, size_t bufsize, char *file_path)
+void utilities_read_from_file(char *buf, size_t buf_size, char *file_path)
 {
     FILE *f = fopen(file_path, "r");
 
     uint32_t i = 0;
     char c = 0;
-    while (c != EOF && i < bufsize - 1) {
+    while (c != EOF && i < buf_size - 1) {
     	c = fgetc(f);
 
     	if (c != EOF) {
@@ -123,9 +122,9 @@ void utilities_read_from_file(char *buf, size_t bufsize, char *file_path)
     fclose(f);
 }
 
-void utilities_file_abs_path_cpy(char *buf, size_t bufsize, char *filename)
+void utilities_file_abs_path_cpy(char *buf, size_t buf_size, char *filename)
 {
-    readlink("/proc/self/exe", buf, bufsize);
+    readlink("/proc/self/exe", buf, buf_size);
     char *ptr = strrchr(buf, '/') + 1;
 
     if (ptr == NULL) {
