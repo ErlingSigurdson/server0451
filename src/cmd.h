@@ -69,7 +69,7 @@
 #define DEFAULT_CMD_FILE_VAL_CMD_TOGGLE   "VAL_CMD_TOGGLE=cmd=setloadtoggle\n"
 
 #define DEFAULT_CMD_FILE_COMMENT_11       "// Запрос текущего предписываемого положения нагрузки.\n"
-#define DEFAULT_CMD_FILE_REQUEST_CMD      "REQUEST_CMD=GETLOAD\n"
+#define DEFAULT_CMD_FILE_REQUEST_CMD      "REQUEST_CMD=UPD_REQ\n"
 
 
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/

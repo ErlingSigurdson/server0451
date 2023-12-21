@@ -19,4 +19,4 @@ URI_CMD_TOGGLE=/setloadtoggle
 // Команда для смены предписываемого положения нагрузки на противоположное, помещаемая в тело POST-запроса (в пару параметр+значение).
 VAL_CMD_TOGGLE=cmd=setloadtoggle
 // Запрос текущего предписываемого положения нагрузки.
-REQUEST_CMD=GETLOAD
+REQUEST_CMD=UPD_REQ
