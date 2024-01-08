@@ -1,3 +1,6 @@
+# For English speakers
+Please note that `help page` is written in English. Run executable with `-h` option to read it or refer to [help_page.h](https://github.com/ErlingSigurdson/server0451/blob/main/src/help_page.h).
+
 # Концепция
 Простой TCP-сервер для Linux, который:
 - по запросу клиента-подписчика (предполагается, что это будет устройство IoT, такое как [Билли](https://github.com/ErlingSigurdson/Billy_the_Relay)) направляет ему команду "ВКЛ." или "ВЫКЛ.". 
