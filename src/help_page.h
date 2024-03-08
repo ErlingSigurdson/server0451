@@ -33,7 +33,7 @@ puts("");                                                                       
 puts("Server works as a broker that allows for control over remote IoT devices with TCP/IP");              \
 puts("messaging capability which control simple ON/OFF loads like LEDSs, relays, etc.");                   \
 puts("");                                                                                                  \
-puts("Server stores currently prescribed load status (1 or 0, \"ON\" or \"OFF\") in a command"             \
+puts("Server stores currently prescribed load status (1 or 0, \"ON\" or \"OFF\") in a command");           \
 puts("configuration file alongside with substrings which, upon being found in incoming TCP/IP messages");  \
 puts("(including HTTP requests), trigger server to either change prescribed load status");                 \
 puts("or serve it to a client.");                                                                          \
