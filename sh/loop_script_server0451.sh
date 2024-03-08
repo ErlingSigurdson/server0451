@@ -13,5 +13,3 @@ while true
 do
     sudo $EXEC_FILEPATH -p 451 -f $CONFIG_FILEPATH
 done &"
-
-
