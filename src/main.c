@@ -25,10 +25,10 @@
 
 // Стандартная библиотека языка C.
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdlib.h>
 #include <errno.h>
 
 // Другие библиотеки.
@@ -47,7 +47,7 @@ void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_path,
 // Проверка упоминания HTTP.
 bool HTTP_is_mentioned(char *buf);
 
-// Обработка входящих команд.
+// Обработчик входящих команд.
 void cmd_handler(int32_t connfd, char *cmd_file_path, uint32_t verbosity_level);
 
 
