@@ -46,8 +46,8 @@ puts("Check newly created command configuration file to learn (and modify if nec
 puts("what substrings found in TCP/IP messages trigger updating and serving prescribed load status.");     \
 puts("");                                                                                                  \
 puts("For continuous listening run loop_script_server0451.sh found in /server0451/sh directory");          \
-puts("as an executable file. Using \"nohup\" is adviced in case you want your server to keep on");         \
-puts("listening after termination of a current shell session.");                                           \
+puts("as an executable file. Using nohup is adviced in case you want your server to keep on listening ");  \
+puts("after termination of a current shell session.");                                                     \
 puts("");																						           \
 puts("If you want to control separate groups of IoT devices which are not supposed to update and read");   \
 puts("the same prescribed load status (aren't meant to share it), consider starting several instances");   \
