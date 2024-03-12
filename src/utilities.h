@@ -18,20 +18,10 @@
 
 /*--- Включения ---*/
 
-// Стандартная библиотека языка C.
+// Из стандартной библиотеки языка Си.
 #include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
+#include <inttypes.h>
 #include <stdbool.h>
-#include <string.h>
-#include <errno.h>
-
-// Другие библиотеки.
-#include <unistd.h>      // для getopt(), read(), write(), close().
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/types.h>
 
 
 /*--- Прочее ---*/
@@ -57,7 +47,7 @@ bool utilities_force_2xLF(char *buf, size_t buf_size);
 void utilities_write_to_file_single_line(char *str, char *file_path);
 void utilities_read_from_file_single_line(char *buf, size_t buf_size, char *file_path);
 void utilities_read_from_file(char *buf, size_t buf_size, char *file_path);
-void utilities_file_abs_path_cpy(char *buf, size_t buf_size, char *filename);
+void utilities_file_abs_path_cpy(char *buf, size_t buf_size, char *file_name);
 
 
-#endif  // Завершающая директива защиты от повторного включения заголовочного файла.
+#endif  // Защита от повторного включения заголовочного файла.

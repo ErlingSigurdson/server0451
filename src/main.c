@@ -4,7 +4,7 @@
  * Имя файла: main.c
  * ----------------------------------------------------------------------------|---------------------------------------|
  * Назначение: основной файл с исходным кодом простого TCP-сервера для Linux,
- * написанным на языке C.
+ * написанным на языке Си.
  * ----------------------------------------------------------------------------|---------------------------------------|
  * Примечания:
  */
@@ -23,7 +23,7 @@
 #include "cmd.h"
 #include "help_page.h"
 
-// Стандартная библиотека языка C.
+// Из стандартной библиотеки языка Си.
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -31,12 +31,14 @@
 #include <stdlib.h>
 #include <errno.h>
 
-// Другие библиотеки.
-#include <unistd.h>      // для getopt(), read(), write(), close().
-#include <netdb.h>
+// Из других библиотек.
+#include <unistd.h>  // Для getopt(), read(), write(), close().
 #include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/types.h>
+
+// Эти включения упоминаются в примерах серверов, написанных на языке Си, но код компилируется и работает и без них.
+//#include <netdb.h>
+//#include <sys/socket.h>
+//#include <sys/types.h>
 
 
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/
@@ -58,7 +60,7 @@ int main(int32_t argc, char *argv[])
     /*--- Обработка опций командной строки и их аргументов ---*/
 
     // Переменные для хранения значений, переданных из командной строки.
-    int32_t port = -1;
+    int32_t port = -1;  // По умолчанию задано невалидное значение.
     char cmd_file_path[STR_MAX_LEN + 1] = {0};
     uint32_t verbosity_level = 0;
 
@@ -69,9 +71,9 @@ int main(int32_t argc, char *argv[])
     /*--- Работа с сокетами ---*/
 
 	if (verbosity_level > 0) {
-	    printf("\n\n* * * * * * * * * * * * * * * * *\n");
-	    printf("Starting TCP server at port %d", port);
-	    printf("\n* * * * * * * * * * * * * * * * *\n");
+	    printf("\n\n* * * * * * * * * * * * * * * * * *\n");
+	    printf("Starting TCP server at port %d\n", port);
+	    printf("* * * * * * * * * * * * * * * * * *\n");
 	}
 
     // Переменные, связанные с сокетами.
@@ -83,14 +85,14 @@ int main(int32_t argc, char *argv[])
     if (sockfd < 0) {
         printf("\nSocket creation failed. Terminating the program.\n");
         printf("Error description: %s\n", strerror(errno));
-        exit(0);
+        exit(1);
     } else if (verbosity_level > 0) {
     	printf("\n...socket successfully created.\n");
     }
 
     // Заполнение нулями.
     memset(&servaddr, '\0', sizeof(servaddr));  /* Иногда используют функцию bzero(),
-												 * но это не благословляется.
+												 * но она считается устаревшей.
 												 */
 
     // Назначение IP-адреса и порта.
@@ -105,7 +107,7 @@ int main(int32_t argc, char *argv[])
     int32_t a = setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &so_reuseaddr, (socklen_t)sizeof(so_reuseaddr) * 2);
 
 	if (verbosity_level > 1) {
-        printf("...setting SO_REUSEADDR return value: %d\n", a);
+        printf("...setting SO_REUSEADDR return value: %d. ", a);
         printf("Status or error description: %s\n", strerror(errno));
 	}
 
@@ -116,26 +118,26 @@ int main(int32_t argc, char *argv[])
     int32_t b = setsockopt(sockfd, SOL_SOCKET, SO_LINGER, &so_linger, (socklen_t)sizeof(so_linger) * 2);
 
     if (verbosity_level > 1) {
-        printf("...clearing SO_LINGER return value: %d\n", b);
+        printf("...clearing SO_LINGER return value: %d. ", b);
         printf("Status or error description: %s\n", strerror(errno));
     }
 
     // Привязать вновь соданный сокет к IP.
     if ((bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr))) != 0) {
-        printf("\nSocket bind failed. Terminating the program.\n");
+        printf("\nSocket binding failed. Terminating the program.\n");
         printf("Error description: %s\n", strerror(errno));
-        exit(0);
+        exit(1);
     } else if (verbosity_level > 0) {
         printf("...socket successfully bound.\n");
     }
 
     // Сервер начинает слушать.
     if ((listen(sockfd, 5)) != 0) {
-        printf("\nEntering listening mode failed. Terminating the program.\n");
+        printf("\nEntering a listen mode failed. Terminating the program.\n");
         printf("Error description: %s\n", strerror(errno));
-        exit(0);
+        exit(1);
     } else if (verbosity_level > 0) {
-        printf("\nServer is listening.\n");
+        printf("...server is listening.\n");
     }
 
     // Принимаем и проверяем сообщение от клиента.
@@ -144,9 +146,9 @@ int main(int32_t argc, char *argv[])
     if (connfd < 0) {
         printf("\nServer failed to accept the client. Terminating the program.\n");
         printf("Error description: %s\n", strerror(errno));
-        exit(0);
+        exit(1);
     } else if (verbosity_level > 0) {
-        printf("Server accepted the client. Starting communication.\n");
+        printf("\nServer accepted a client. Starting communication.\n");
     }
 
     // Вызываем функцию-обработчик поступивших команд.
@@ -193,7 +195,7 @@ void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_path,
 
     if (*port < 0) {
         printf("Please restart the program and insert a valid port number as a -p option argument.\n");
-        exit(0);
+        exit(1);
     }
 
     if (cmd_file_path[0] != '/' && cmd_file_path[0] != '.') {
@@ -202,7 +204,7 @@ void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_path,
         printf("If such file doesn't exist, the program will create it\n");
         printf("at specified path automatically. File will contain\n");
         printf("default values.\n");
-        exit(0);
+        exit(1);
     }
 }
 
@@ -224,7 +226,7 @@ void cmd_handler(int32_t connfd, char *cmd_file_path, uint32_t verbosity_level)
     cmd_file_read_else_write_defaults(cmd_file_contents, cmd_file_path);
 
 
-    /*--- Чтение ---*/
+    /*--- Чтение направленных клиентом данных ---*/
 
     char buf[STR_MAX_LEN + 1] = {0};
 
@@ -332,7 +334,7 @@ void cmd_handler(int32_t connfd, char *cmd_file_path, uint32_t verbosity_level)
     }
 
 	/* Программа доходит до этой точки только в случае, если в сообщении
-	 * от клиента не было найдено ни одной корректной команды.
+	 * от клиента не было найдено ни одной валидной команды.
 	 */
     if (verbosity_level > 0) {
         printf("No valid command received.\n");
