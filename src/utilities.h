@@ -16,14 +16,6 @@
 #define UTILITIES_H
 
 
-/*--- Включения ---*/
-
-// Из стандартной библиотеки языка Си.
-#include <stdio.h>
-#include <inttypes.h>
-#include <stdbool.h>
-
-
 /*--- Прочее ---*/
 
 // Пара макросов для превращения аргумента в строку.
@@ -47,7 +39,7 @@ bool utilities_force_2xLF(char *buf, size_t buf_size);
 void utilities_write_to_file_single_line(char *str, char *file_path);
 void utilities_read_from_file_single_line(char *buf, size_t buf_size, char *file_path);
 void utilities_read_from_file(char *buf, size_t buf_size, char *file_path);
-void utilities_file_abs_path_cpy(char *buf, size_t buf_size, char *file_name);
+void utilities_cpy_file_abs_path(char *buf, size_t buf_size, char *file_name);
 
 
 #endif  // Защита от повторного включения заголовочного файла.

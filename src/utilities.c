@@ -13,9 +13,6 @@
 
 /*--- Включения ---*/
 
-// Локальные модули.
-#include "utilities.h"
-
 // Из стандартной библиотеки языка Си.
 #include <stdio.h>
 #include <inttypes.h>
@@ -25,7 +22,10 @@
 #include <errno.h>
 
 // Из других библиотек.
-#include <unistd.h>  // Для readlink().
+#include <unistd.h>  // readlink().
+
+// Локальные модули.
+#include "utilities.h"
 
 
 /******************** ФУНКЦИИ *******************/
@@ -135,7 +135,7 @@ void utilities_read_from_file(char *buf, size_t buf_size, char *file_path)
     fclose(f);
 }
 
-void utilities_file_abs_path_cpy(char *buf, size_t buf_size, char *file_name)
+void utilities_cpy_file_abs_path(char *buf, size_t buf_size, char *file_name)
 {
     readlink("/proc/self/exe", buf, buf_size);
     char *ptr = strrchr(buf, '/') + 1;

@@ -14,15 +14,6 @@
 
 /*--- Включения ---*/
 
-// Настройки проекта.
-#include "config_general.h"
-#include "config_HTTP.h"
-
-// Локальные модули.
-#include "utilities.h"
-#include "cmd.h"
-#include "help_page.h"
-
 // Из стандартной библиотеки языка Си.
 #include <stdio.h>
 #include <stdint.h>
@@ -39,6 +30,15 @@
 //#include <netdb.h>
 //#include <sys/socket.h>
 //#include <sys/types.h>
+
+// Настройки проекта.
+#include "config_general.h"
+#include "config_HTTP.h"
+
+// Локальные модули.
+#include "utilities.h"
+#include "cmd.h"
+#include "help_page.h"
 
 
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/
