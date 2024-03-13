@@ -16,6 +16,14 @@
 #define UTILITIES_H
 
 
+/*--- Включения ---*/
+
+// Из стандартной библиотеки языка Си.
+#include <stdio.h>
+#include <inttypes.h>
+#include <stdbool.h>
+
+
 /*--- Прочее ---*/
 
 // Пара макросов для превращения аргумента в строку.
@@ -27,11 +35,13 @@
 
 /*--- Работа со строками ---*/
 
-bool utilities_remove_CR_and_LF(char *buf);
-bool utilities_append_CR_and_LF(char *buf, size_t buf_size);
-bool utilities_append_LF(char *buf, size_t buf_size);
-bool utilities_append_LF_if_absent(char *buf, size_t buf_size);
-bool utilities_force_2xLF(char *buf, size_t buf_size);
+bool utilities_nullify_first_CR_or_LF_in_string(char *buf);
+bool utilities_nullify_all_CR_and_LF_in_char_array(char *buf, size_t buf_size);
+bool utilities_nullify_all_trailing_CR_and_LF_in_string(char *buf);
+bool utilities_substitute_all_CR_and_LF_in_char_array(char *buf, size_t buf_size, char character);
+bool utilities_append_LF_to_string(char *buf, size_t buf_size);
+bool utilities_append_LF_if_absent_to_string(char *buf, size_t buf_size);
+bool utilities_append_CR_to_string(char *buf, size_t buf_size);
 
 
 /*--- Работа с файлами ---*/
@@ -39,7 +49,6 @@ bool utilities_force_2xLF(char *buf, size_t buf_size);
 void utilities_write_to_file_single_line(char *str, char *file_path);
 void utilities_read_from_file_single_line(char *buf, size_t buf_size, char *file_path);
 void utilities_read_from_file(char *buf, size_t buf_size, char *file_path);
-void utilities_cpy_file_abs_path(char *buf, size_t buf_size, char *file_name);
 
 
 #endif  // Защита от повторного включения заголовочного файла.

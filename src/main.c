@@ -16,14 +16,14 @@
 
 // Из стандартной библиотеки языка Си.
 #include <stdio.h>
-#include <stdint.h>
+#include <inttypes.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
 
 // Из других библиотек.
-#include <unistd.h>  // Для getopt(), read(), write(), close().
+#include <unistd.h>  // getopt(), read(), write(), close().
 #include <netinet/in.h>
 
 // Эти включения упоминаются в примерах серверов, написанных на языке Си, но код компилируется и работает и без них.
@@ -44,7 +44,7 @@
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/
 
 // Обработчик опций командной строки и их аргументов.
-void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_path, uint32_t *verbosity_level);
+void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_name, uint32_t *verbosity_level);
 
 // Проверка упоминания HTTP.
 bool HTTP_is_mentioned(char *buf);
@@ -61,11 +61,11 @@ int main(int32_t argc, char *argv[])
 
     // Переменные для хранения значений, переданных из командной строки.
     int32_t port = -1;  // По умолчанию задано невалидное значение.
-    char cmd_file_path[STR_MAX_LEN + 1] = {0};
+    char cmd_file_name[STR_MAX_LEN + 1] = {0};
     uint32_t verbosity_level = 0;
 
     // Поиск и обработка опций и аргументов.
-    opt_handler(argc, argv, &port, cmd_file_path, &verbosity_level);
+    opt_handler(argc, argv, &port, cmd_file_name, &verbosity_level);
 
 
     /*--- Работа с сокетами ---*/
@@ -152,7 +152,7 @@ int main(int32_t argc, char *argv[])
     }
 
     // Вызываем функцию-обработчик поступивших команд.
-    cmd_handler(connfd, cmd_file_path, verbosity_level);
+    cmd_handler(connfd, cmd_file_name, verbosity_level);
 
     // Закрытие сокета.
     //shutdown(sockfd, SHUT_RDWR);  // Вроде бы не нужно, но иногда упоминается.
@@ -161,7 +161,7 @@ int main(int32_t argc, char *argv[])
     return 0;
 }
 
-void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_path, uint32_t *verbosity_level)
+void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_name, uint32_t *verbosity_level)
 {
     int32_t opt = 0;
     while ((opt = getopt(argc, argv, "p:f:vVh")) >= 0) {
@@ -173,7 +173,7 @@ void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_path,
 
             // Обязательная опция.
             case 'f':
-                sscanf(optarg, "%s", cmd_file_path);
+                sscanf(optarg, "%s", cmd_file_name);
                 break;
 
             case 'v':
@@ -190,6 +190,7 @@ void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_path,
 
             default:
             	// Ничего не делаем, отдаём дань MISRA.
+            	break;
         }
     }
 
@@ -198,12 +199,10 @@ void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_path,
         exit(1);
     }
 
-    if (cmd_file_path[0] != '/' && cmd_file_path[0] != '.') {
-        printf("Please restart the program and insert a valid path\n");
-        printf("to a command configuration file as an -f option argument.\n");
-        printf("If such file doesn't exist, the program will create it\n");
-        printf("at specified path automatically. File will contain\n");
-        printf("default values.\n");
+    if (strchr(cmd_file_name, '/') != NULL || strlen(cmd_file_name) == 0) {
+        printf("Please restart the program and insert a valid name for a command configuration file\n");
+        printf("as an -f option argument. If such file doesn't exist, the program will create it\n");
+        printf("at server0451/bin directory automatically. The file will contain default values.\n");
         exit(1);
     }
 }
@@ -217,8 +216,16 @@ bool HTTP_is_mentioned(char *buf)
     }
 }
 
-void cmd_handler(int32_t connfd, char *cmd_file_path, uint32_t verbosity_level)
+void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
 {
+    /*--- Нахождение полного пути к файлу конфигурации команд ---*/
+        
+    char cmd_file_path[CMD_FILE_NAME_LEN] = {0};
+    readlink("/proc/self/exe", cmd_file_path, sizeof(cmd_file_path));
+    char *ptr = strrchr(cmd_file_path, '/') + 1;
+    strcpy(ptr, cmd_file_name);    
+    
+
     /*--- Чтение файла конфигурации команд ---*/
 
     // Считывание значений.
@@ -235,7 +242,9 @@ void cmd_handler(int32_t connfd, char *cmd_file_path, uint32_t verbosity_level)
 
     // Выводим содержимое буфера.
     if (verbosity_level > 0) {
-        utilities_force_2xLF(buf, sizeof(buf));
+        utilities_nullify_all_trailing_CR_and_LF_in_string(buf);
+        utilities_append_LF_to_string(buf, sizeof(buf));
+        utilities_append_LF_to_string(buf, sizeof(buf));
         printf("\nMessage received from the client:\n%s", buf);
     }
 
@@ -267,9 +276,11 @@ void cmd_handler(int32_t connfd, char *cmd_file_path, uint32_t verbosity_level)
 	
     if (is_setloadtoggle) {
         if (current_load_status_cmd) {
+            is_setloadon = 0;
         	is_setloadoff = 1;
         } else {
         	is_setloadon = 1;
+        	is_setloadoff = 0;
         }
     }
 

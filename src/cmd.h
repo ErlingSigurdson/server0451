@@ -18,14 +18,19 @@
 
 /*--- Включения ---*/
 
+// Из стандартной библиотеки языка Си.
+#include <stdio.h>
+#include <inttypes.h>
+#include <stdbool.h>
+
 // Настройки проекта.
 #include "config_general.h"
 
-// Стандартная библиотека языка C.
-#include <stdbool.h>
-
 
 /*--- Прочее ---*/
+
+// Предельная длина имени файла конфигураций.
+#define CMD_FILE_NAME_LEN 1000
 
 // Длина списка команд.
 #define CMD_FILE_LIST_LEN 11
@@ -74,8 +79,8 @@
 
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/
 
-void cmd_file_read_else_write_defaults(char cmd_file_contents[CMD_FILE_LIST_LEN][STR_MAX_LEN], char *cmd_filepath);
+void cmd_file_read_else_write_defaults(char cmd_file_contents[CMD_FILE_LIST_LEN][STR_MAX_LEN], char *cmd_file_path);
 void cmd_file_update_current_load_status_cmd(char *cmd_file_path, bool load_status_cmd_to_post);
 
 
-#endif  // Завершающая директива защиты от повторного включения заголовочного файла.
+#endif  // Защита от повторного включения заголовочного файла.

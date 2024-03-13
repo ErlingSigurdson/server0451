@@ -56,4 +56,4 @@ puts("done with port numbers also separated for different IoT devices flocks, bu
 puts("a single port as well.");																	           \
 
 
-#endif  // Завершающая директива защиты от повторного включения заголовочного файла.
+#endif  // Защита от повторного включения заголовочного файла.
