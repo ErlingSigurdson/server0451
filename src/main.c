@@ -4,7 +4,7 @@
  * Имя файла: main.c
  * ----------------------------------------------------------------------------|---------------------------------------|
  * Назначение: основной файл с исходным кодом простого TCP-сервера для Linux,
- * написанным на языке C.
+ * написанным на языке Си.
  * ----------------------------------------------------------------------------|---------------------------------------|
  * Примечания:
  */
@@ -13,6 +13,23 @@
 /************ ДИРЕКТИВЫ ПРЕПРОЦЕССОРА ***********/
 
 /*--- Включения ---*/
+
+// Из стандартной библиотеки языка Си.
+#include <stdio.h>
+#include <inttypes.h>
+#include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
+#include <errno.h>
+
+// Из других библиотек.
+#include <unistd.h>  // getopt(), read(), write(), close().
+#include <netinet/in.h>
+
+// Эти включения упоминаются в примерах серверов, написанных на языке Си, но код компилируется и работает и без них.
+//#include <netdb.h>
+//#include <sys/socket.h>
+//#include <sys/types.h>
 
 // Настройки проекта.
 #include "config_general.h"
@@ -23,31 +40,16 @@
 #include "cmd.h"
 #include "help_page.h"
 
-// Стандартная библиотека языка C.
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
-#include <errno.h>
-
-// Другие библиотеки.
-#include <unistd.h>      // для getopt(), read(), write(), close().
-#include <netdb.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-
 
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/
 
 // Обработчик опций командной строки и их аргументов.
-void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_path, uint32_t *verbosity_level);
+void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_name, uint32_t *verbosity_level);
 
 // Проверка упоминания HTTP.
 bool HTTP_is_mentioned(char *buf);
 
-// Обработка входящих команд.
+// Обработчик входящих команд.
 void cmd_handler(int32_t connfd, char *cmd_file_path, uint32_t verbosity_level);
 
 
@@ -58,20 +60,20 @@ int main(int32_t argc, char *argv[])
     /*--- Обработка опций командной строки и их аргументов ---*/
 
     // Переменные для хранения значений, переданных из командной строки.
-    int32_t port = -1;
-    char cmd_file_path[STR_MAX_LEN + 1] = {0};
+    int32_t port = -1;  // По умолчанию задано невалидное значение.
+    char cmd_file_name[STR_MAX_LEN + 1] = {0};
     uint32_t verbosity_level = 0;
 
     // Поиск и обработка опций и аргументов.
-    opt_handler(argc, argv, &port, cmd_file_path, &verbosity_level);
+    opt_handler(argc, argv, &port, cmd_file_name, &verbosity_level);
 
 
     /*--- Работа с сокетами ---*/
 
 	if (verbosity_level > 0) {
-	    printf("\n\n* * * * * * * * * * * * * * * * *\n");
-	    printf("Starting TCP server at port %d", port);
-	    printf("\n* * * * * * * * * * * * * * * * *\n");
+	    printf("\n\n* * * * * * * * * * * * * * * * * *\n");
+	    printf("Starting TCP server at port %d\n", port);
+	    printf("* * * * * * * * * * * * * * * * * *\n");
 	}
 
     // Переменные, связанные с сокетами.
@@ -83,14 +85,14 @@ int main(int32_t argc, char *argv[])
     if (sockfd < 0) {
         printf("\nSocket creation failed. Terminating the program.\n");
         printf("Error description: %s\n", strerror(errno));
-        exit(0);
+        exit(1);
     } else if (verbosity_level > 0) {
     	printf("\n...socket successfully created.\n");
     }
 
     // Заполнение нулями.
     memset(&servaddr, '\0', sizeof(servaddr));  /* Иногда используют функцию bzero(),
-												 * но это не благословляется.
+												 * но она считается устаревшей.
 												 */
 
     // Назначение IP-адреса и порта.
@@ -105,7 +107,7 @@ int main(int32_t argc, char *argv[])
     int32_t a = setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &so_reuseaddr, (socklen_t)sizeof(so_reuseaddr) * 2);
 
 	if (verbosity_level > 1) {
-        printf("...setting SO_REUSEADDR return value: %d\n", a);
+        printf("...setting SO_REUSEADDR return value: %d. ", a);
         printf("Status or error description: %s\n", strerror(errno));
 	}
 
@@ -116,26 +118,26 @@ int main(int32_t argc, char *argv[])
     int32_t b = setsockopt(sockfd, SOL_SOCKET, SO_LINGER, &so_linger, (socklen_t)sizeof(so_linger) * 2);
 
     if (verbosity_level > 1) {
-        printf("...clearing SO_LINGER return value: %d\n", b);
+        printf("...clearing SO_LINGER return value: %d. ", b);
         printf("Status or error description: %s\n", strerror(errno));
     }
 
     // Привязать вновь соданный сокет к IP.
     if ((bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr))) != 0) {
-        printf("\nSocket bind failed. Terminating the program.\n");
+        printf("\nSocket binding failed. Terminating the program.\n");
         printf("Error description: %s\n", strerror(errno));
-        exit(0);
+        exit(1);
     } else if (verbosity_level > 0) {
         printf("...socket successfully bound.\n");
     }
 
     // Сервер начинает слушать.
     if ((listen(sockfd, 5)) != 0) {
-        printf("\nEntering listening mode failed. Terminating the program.\n");
+        printf("\nEntering a listen mode failed. Terminating the program.\n");
         printf("Error description: %s\n", strerror(errno));
-        exit(0);
+        exit(1);
     } else if (verbosity_level > 0) {
-        printf("\nServer is listening.\n");
+        printf("...server is listening.\n");
     }
 
     // Принимаем и проверяем сообщение от клиента.
@@ -144,13 +146,13 @@ int main(int32_t argc, char *argv[])
     if (connfd < 0) {
         printf("\nServer failed to accept the client. Terminating the program.\n");
         printf("Error description: %s\n", strerror(errno));
-        exit(0);
+        exit(1);
     } else if (verbosity_level > 0) {
-        printf("Server accepted the client. Starting communication.\n");
+        printf("\nServer accepted a client. Starting communication.\n");
     }
 
     // Вызываем функцию-обработчик поступивших команд.
-    cmd_handler(connfd, cmd_file_path, verbosity_level);
+    cmd_handler(connfd, cmd_file_name, verbosity_level);
 
     // Закрытие сокета.
     //shutdown(sockfd, SHUT_RDWR);  // Вроде бы не нужно, но иногда упоминается.
@@ -159,7 +161,7 @@ int main(int32_t argc, char *argv[])
     return 0;
 }
 
-void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_path, uint32_t *verbosity_level)
+void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_name, uint32_t *verbosity_level)
 {
     int32_t opt = 0;
     while ((opt = getopt(argc, argv, "p:f:vVh")) >= 0) {
@@ -171,7 +173,7 @@ void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_path,
 
             // Обязательная опция.
             case 'f':
-                sscanf(optarg, "%s", cmd_file_path);
+                sscanf(optarg, "%s", cmd_file_name);
                 break;
 
             case 'v':
@@ -188,21 +190,20 @@ void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_path,
 
             default:
             	// Ничего не делаем, отдаём дань MISRA.
+            	break;
         }
     }
 
     if (*port < 0) {
         printf("Please restart the program and insert a valid port number as a -p option argument.\n");
-        exit(0);
+        exit(1);
     }
 
-    if (cmd_file_path[0] != '/' && cmd_file_path[0] != '.') {
-        printf("Please restart the program and insert a valid path\n");
-        printf("to a command configuration file as an -f option argument.\n");
-        printf("If such file doesn't exist, the program will create it\n");
-        printf("at specified path automatically. File will contain\n");
-        printf("default values.\n");
-        exit(0);
+    if (strchr(cmd_file_name, '/') != NULL || strlen(cmd_file_name) == 0) {
+        printf("Please restart the program and insert a valid name for a command configuration file\n");
+        printf("as an -f option argument. If such file doesn't exist, the program will create it\n");
+        printf("at server0451/bin directory automatically. The file will contain default values.\n");
+        exit(1);
     }
 }
 
@@ -215,8 +216,16 @@ bool HTTP_is_mentioned(char *buf)
     }
 }
 
-void cmd_handler(int32_t connfd, char *cmd_file_path, uint32_t verbosity_level)
+void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
 {
+    /*--- Нахождение полного пути к файлу конфигурации команд ---*/
+        
+    char cmd_file_path[CMD_FILE_NAME_LEN] = {0};
+    readlink("/proc/self/exe", cmd_file_path, sizeof(cmd_file_path));
+    char *ptr = strrchr(cmd_file_path, '/') + 1;
+    strcpy(ptr, cmd_file_name);    
+    
+
     /*--- Чтение файла конфигурации команд ---*/
 
     // Считывание значений.
@@ -224,7 +233,7 @@ void cmd_handler(int32_t connfd, char *cmd_file_path, uint32_t verbosity_level)
     cmd_file_read_else_write_defaults(cmd_file_contents, cmd_file_path);
 
 
-    /*--- Чтение ---*/
+    /*--- Чтение направленных клиентом данных ---*/
 
     char buf[STR_MAX_LEN + 1] = {0};
 
@@ -233,7 +242,9 @@ void cmd_handler(int32_t connfd, char *cmd_file_path, uint32_t verbosity_level)
 
     // Выводим содержимое буфера.
     if (verbosity_level > 0) {
-        utilities_force_2xLF(buf, sizeof(buf));
+        utilities_nullify_all_trailing_CR_and_LF_in_string(buf);
+        utilities_append_LF_to_string(buf, sizeof(buf));
+        utilities_append_LF_to_string(buf, sizeof(buf));
         printf("\nMessage received from the client:\n%s", buf);
     }
 
@@ -265,9 +276,11 @@ void cmd_handler(int32_t connfd, char *cmd_file_path, uint32_t verbosity_level)
 	
     if (is_setloadtoggle) {
         if (current_load_status_cmd) {
+            is_setloadon = 0;
         	is_setloadoff = 1;
         } else {
         	is_setloadon = 1;
+        	is_setloadoff = 0;
         }
     }
 
@@ -332,7 +345,7 @@ void cmd_handler(int32_t connfd, char *cmd_file_path, uint32_t verbosity_level)
     }
 
 	/* Программа доходит до этой точки только в случае, если в сообщении
-	 * от клиента не было найдено ни одной корректной команды.
+	 * от клиента не было найдено ни одной валидной команды.
 	 */
     if (verbosity_level > 0) {
         printf("No valid command received.\n");
