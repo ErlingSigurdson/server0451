@@ -26,7 +26,9 @@
 #include <unistd.h>  // getopt(), read(), write(), close().
 #include <netinet/in.h>
 
-// Эти включения упоминаются в примерах серверов, написанных на языке Си, но код компилируется и работает и без них.
+/* Эти заголовочные файлы упоминаются в примерах серверов, написанных на языке Си,
+ * но код компилируется и работает и без них.
+ */
 //#include <netdb.h>
 //#include <sys/socket.h>
 //#include <sys/types.h>
@@ -64,7 +66,7 @@ int main(int32_t argc, char *argv[])
     char cmd_file_name[STR_MAX_LEN + 1] = {0};
     uint32_t verbosity_level = 0;
 
-    // Поиск и обработка опций и аргументов.
+    // Поиск и чтение опций командной строки и их аргументов.
     opt_handler(argc, argv, &port, cmd_file_name, &verbosity_level);
 
 
@@ -218,7 +220,7 @@ bool HTTP_is_mentioned(char *buf)
 
 void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
 {
-    /*--- Нахождение полного пути к файлу конфигурации команд ---*/
+    /*--- Нахождение полного пути к настроечному файлу ---*/
         
     char cmd_file_path[CMD_FILE_NAME_LEN] = {0};
     readlink("/proc/self/exe", cmd_file_path, sizeof(cmd_file_path));
@@ -226,7 +228,7 @@ void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
     strcpy(ptr, cmd_file_name);    
     
 
-    /*--- Чтение файла конфигурации команд ---*/
+    /*--- Чтение настроечного файла ---*/
 
     // Считывание значений.
     char cmd_file_contents[CMD_FILE_LIST_LEN][STR_MAX_LEN] = {0};
@@ -269,9 +271,9 @@ void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
     bool is_HTTP = HTTP_is_mentioned(buf);
 
 
-	/*--- Запись в файл нового предписываемого положения нагрузки и направление ответа клиенту ---*/
+	/*--- Запись в файл нового предписываемого состояния нагрузки и направление ответа клиенту ---*/
 
-	// Проверка текущего предписанного состояния нагрузки.
+	// Проверка текущего предписываемого состояния нагрузки.
 	bool current_load_status_cmd = cmd_file_contents[CMD_FILE_CURRENT_CMD][0] - '0';
 	
     if (is_setloadtoggle) {

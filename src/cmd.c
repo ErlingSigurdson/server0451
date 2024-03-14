@@ -42,22 +42,22 @@ void cmd_file_read_else_write_defaults(char cmd_file_contents[CMD_FILE_LIST_LEN]
         fputs(DEFAULT_CMD_FILE_URI_CMD_ON, f);
         fputs(DEFAULT_CMD_FILE_COMMENT_4, f);
         fputs(DEFAULT_CMD_FILE_VAL_CMD_ON, f);
-        fputs(DEFAULT_CMD_FILE_COMMENT_5, f);
         
+        fputs(DEFAULT_CMD_FILE_COMMENT_5, f);
         fputs(DEFAULT_CMD_FILE_ASCII_CMD_OFF, f);
         fputs(DEFAULT_CMD_FILE_COMMENT_6, f);
         fputs(DEFAULT_CMD_FILE_URI_CMD_OFF, f);
         fputs(DEFAULT_CMD_FILE_COMMENT_7, f);
         fputs(DEFAULT_CMD_FILE_VAL_CMD_OFF, f);
-        fputs(DEFAULT_CMD_FILE_COMMENT_8, f);
         
+        fputs(DEFAULT_CMD_FILE_COMMENT_8, f);
         fputs(DEFAULT_CMD_FILE_ASCII_CMD_TOGGLE, f);
         fputs(DEFAULT_CMD_FILE_COMMENT_9, f);
         fputs(DEFAULT_CMD_FILE_URI_CMD_TOGGLE, f);
         fputs(DEFAULT_CMD_FILE_COMMENT_10, f);
         fputs(DEFAULT_CMD_FILE_VAL_CMD_TOGGLE, f);
-        fputs(DEFAULT_CMD_FILE_COMMENT_11, f);
         
+        fputs(DEFAULT_CMD_FILE_COMMENT_11, f);
         fputs(DEFAULT_CMD_FILE_REQUEST_CMD, f);
 
         freopen(NULL, "r", f);
