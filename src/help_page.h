@@ -17,12 +17,12 @@
 
 #define PRINT_HELP_PAGE                                                                                    \
 puts("Simple Linux TCP server for IoT written in C language.");                                            \
-puts("Usage (start server): server0451 -p <port> -f <file_path> [-h][-v][-V]");                            \
-puts("Example: server0451 -p 80 -f /home/my_user_name/configs_server0451 -v");                             \
+puts("Usage (start server): server0451 -p <port> -f <cmd_file_name> [-h][-v][-V]");                        \
+puts("Example: server0451 -p 80 -f configs_server0451 -v");                                                \
 puts("");                                                                                                  \
 puts("Options:");                                                                                          \
-puts("    -p <port>       specify a port to listen (mandatory option).");                                  \
-puts("    -f <file_path>  specify a file path for a command configuration file (mandatory option).");      \
+puts("    -p <port>       specify a port to listen to (mandatory option).");                               \
+puts("    -f <file_path>  specify a name for a command configuration file (mandatory option).");           \
 puts("    -v              verbose mode.");                                                                 \
 puts("    -V              even more verbose mode.");                                                       \
 puts("    -h              this help page.");                                                               \
@@ -46,14 +46,14 @@ puts("Check newly created command configuration file to learn (and modify if nec
 puts("what substrings found in TCP/IP messages trigger updating and serving prescribed load status.");     \
 puts("");                                                                                                  \
 puts("For continuous listening run loop_script_server0451.sh found in /server0451/sh directory");          \
-puts("as an executable file. Using nohup is adviced in case you want your server to keep on listening ");  \
+puts("as an executable file. Using nohup is adviced in case you want your server to keep on listening");   \
 puts("after termination of a current shell session.");                                                     \
 puts("");																						           \
 puts("If you want to control separate groups of IoT devices which are not supposed to update and read");   \
-puts("the same prescribed load status (aren't meant to share it), consider starting several instances");   \
-puts("of a server with separate command configuration file paths specified. Perhaps it's better to be");   \
-puts("done with port numbers also separated for different IoT devices flocks, but it will work within");   \
-puts("a single port as well.");																	           \
+puts("the same prescribed load status (aren't meant to share it), consider launching");                    \
+puts("loop_script_server0451.sh several times, with different configuration file names specified.");       \
+puts("After that you should slightly alter your configuration files so that command syntax would be");  \
+puts("at least slightly different for each one.");
 
 
 #endif  // Защита от повторного включения заголовочного файла.
