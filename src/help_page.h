@@ -52,7 +52,7 @@ puts("");																						           \
 puts("If you want to control separate groups of IoT devices which are not supposed to update and read");   \
 puts("the same prescribed load status (aren't meant to share it), consider launching");                    \
 puts("loop_script_server0451.sh several times, with different configuration file names specified.");       \
-puts("After that you should slightly alter your configuration files so that command syntax would be");  \
+puts("After that you should slightly alter your configuration files so that command syntax would be");     \
 puts("at least slightly different for each one.");
 
 
