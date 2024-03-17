@@ -101,7 +101,7 @@ bool utilities_append_LF_if_absent_to_string(char *buf, size_t buf_size)
 
 bool utilities_append_CR_to_string(char *buf, size_t buf_size)
 {
-    if (buf_size - strlen(buf) >= 2) {  // Один байт для LF, второй для нуля.
+    if (buf_size - strlen(buf) >= 2) {  // Один байт для CR, второй для нуля.
         buf[strlen(buf)] = '\r';
 
         return 1;
