@@ -19,12 +19,13 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <string.h>
-#include <stdlib.h>
+#include <stdlib.h>  // exit().
 #include <errno.h>
 
-// Из других библиотек.
+// Из библиотек POSIX.
 #include <unistd.h>  // getopt(), read(), write(), close().
 #include <netinet/in.h>
+#include <time.h>
 
 /* Эти заголовочные файлы упоминаются в примерах серверов, написанных на языке Си,
  * но код компилируется и работает и без них.
@@ -47,6 +48,9 @@
 
 // Обработчик опций командной строки и их аргументов.
 void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_name, uint32_t *verbosity_level);
+
+// Вывести в консоль текущее время в человекочитаемом формате.
+void print_timestamp();
 
 // Проверка упоминания HTTP.
 bool HTTP_is_mentioned(char *buf);
@@ -75,6 +79,7 @@ int main(int32_t argc, char *argv[])
 	if (verbosity_level > 0) {
 	    printf("\n\n* * * * * * * * * * * * * * * * * *\n");
 	    printf("Starting TCP server at port %d\n", port);
+	    print_timestamp();
 	    printf("* * * * * * * * * * * * * * * * * *\n");
 	}
 
@@ -207,6 +212,22 @@ void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_name,
         fprintf(stderr, "at server0451/bin directory automatically. The file will contain default values.\n");
         exit(1);
     }
+}
+
+// Вывести в консоль текущее время в человекочитаемом формате.
+void print_timestamp()
+{
+    #define BUF_LEN 50
+
+	time_t posix_time;
+	char buf[BUF_LEN] = {0};
+	struct tm *time_fields;
+
+	posix_time = time(NULL);
+	time_fields = localtime(&posix_time);
+
+	strftime(buf, BUF_LEN, "Date: %d.%m.%Y, time (UTC): %H:%M:%S", time_fields);
+	printf("%s\n", buf);
 }
 
 bool HTTP_is_mentioned(char *buf)
