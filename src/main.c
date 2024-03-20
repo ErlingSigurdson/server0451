@@ -85,8 +85,8 @@ int main(int32_t argc, char *argv[])
     // Создание сокета.
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
-        printf("\nSocket creation failed. Terminating the program.\n");
-        printf("Error description: %s\n", strerror(errno));
+        fprintf(stderr, "\nSocket creation at port %d failed. Terminating the program.\n", port);
+        fprintf(stderr, "Error description: %s\n", strerror(errno));
         exit(1);
     } else if (verbosity_level > 0) {
     	printf("\n...socket successfully created.\n");
@@ -126,8 +126,8 @@ int main(int32_t argc, char *argv[])
 
     // Привязать вновь соданный сокет к IP.
     if ((bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr))) != 0) {
-        printf("\nSocket binding failed. Terminating the program.\n");
-        printf("Error description: %s\n", strerror(errno));
+        fprintf(stderr, "\nSocket binding at port %d failed. Terminating the program.\n", port);
+        fprintf(stderr, "Error description: %s\n", strerror(errno));
         exit(1);
     } else if (verbosity_level > 0) {
         printf("...socket successfully bound.\n");
@@ -135,8 +135,8 @@ int main(int32_t argc, char *argv[])
 
     // Сервер начинает слушать.
     if ((listen(sockfd, 5)) != 0) {
-        printf("\nEntering a listen mode failed. Terminating the program.\n");
-        printf("Error description: %s\n", strerror(errno));
+        fprintf(stderr, "\nEntering a listen mode at port %d failed. Terminating the program.\n", port);
+        fprintf(stderr, "Error description: %s\n", strerror(errno));
         exit(1);
     } else if (verbosity_level > 0) {
         printf("...server is listening.\n");
@@ -146,8 +146,8 @@ int main(int32_t argc, char *argv[])
     len = sizeof(cli);
     connfd = accept(sockfd, (struct sockaddr*)&cli, (socklen_t*)&len);
     if (connfd < 0) {
-        printf("\nServer failed to accept the client. Terminating the program.\n");
-        printf("Error description: %s\n", strerror(errno));
+        fprintf(stderr, "\nServer failed to accept the client at port %d. Terminating the program.\n", port);
+        fprintf(stderr, "Error description: %s\n", strerror(errno));
         exit(1);
     } else if (verbosity_level > 0) {
         printf("\nServer accepted a client. Starting communication.\n");
@@ -197,14 +197,14 @@ void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_name,
     }
 
     if (*port < 0) {
-        printf("Please restart the program and insert a valid port number as a -p option argument.\n");
+        fprintf(stderr, "Please restart the program and insert a valid port number as a -p option argument.\n");
         exit(1);
     }
 
     if (strchr(cmd_file_name, '/') != NULL || strlen(cmd_file_name) == 0) {
-        printf("Please restart the program and insert a valid name for a command configuration file\n");
-        printf("as an -f option argument. If such file doesn't exist, the program will create it\n");
-        printf("at server0451/bin directory automatically. The file will contain default values.\n");
+        fprintf(stderr, "Please restart the program and insert a valid name for a command configuration file\n");
+        fprintf(stderr, "as an -f option argument. If such file doesn't exist, the program will create it\n");
+        fprintf(stderr, "at server0451/bin directory automatically. The file will contain default values.\n");
         exit(1);
     }
 }
@@ -340,6 +340,7 @@ void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
 
         if (verbosity_level > 0) {
             printf("Current command requested.\n");
+            printf("Current command sent: %s", buf);
         }
 
         write(connfd, buf, strlen(buf));
