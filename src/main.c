@@ -89,7 +89,7 @@ int main(int32_t argc, char *argv[])
         fprintf(stderr, "Error description: %s\n", strerror(errno));
         exit(1);
     } else if (verbosity_level > 0) {
-    	printf("\n...socket successfully created.\n");
+    	printf("\n...socket successfully created at port %d.\n", port);
     }
 
     // Заполнение нулями.
@@ -130,7 +130,7 @@ int main(int32_t argc, char *argv[])
         fprintf(stderr, "Error description: %s\n", strerror(errno));
         exit(1);
     } else if (verbosity_level > 0) {
-        printf("...socket successfully bound.\n");
+        printf("...socket successfully bound at port %d.\n", port);
     }
 
     // Сервер начинает слушать.
@@ -139,7 +139,7 @@ int main(int32_t argc, char *argv[])
         fprintf(stderr, "Error description: %s\n", strerror(errno));
         exit(1);
     } else if (verbosity_level > 0) {
-        printf("...server is listening.\n");
+        printf("...server is listening at port %d.\n", port);
     }
 
     // Принимаем и проверяем сообщение от клиента.
@@ -150,7 +150,7 @@ int main(int32_t argc, char *argv[])
         fprintf(stderr, "Error description: %s\n", strerror(errno));
         exit(1);
     } else if (verbosity_level > 0) {
-        printf("\nServer accepted a client. Starting communication.\n");
+        printf("\nServer accepted a client at port %d. Starting communication.\n", port);
     }
 
     // Вызываем функцию-обработчик поступивших команд.
