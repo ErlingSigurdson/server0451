@@ -246,7 +246,8 @@ void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
     char cmd_file_path[CMD_FILE_NAME_LEN] = {0};
     readlink("/proc/self/exe", cmd_file_path, sizeof(cmd_file_path));
     char *ptr = strrchr(cmd_file_path, '/') + 1;
-    strcpy(ptr, cmd_file_name);    
+    strcpy(ptr, "../.config/");
+    strcat(cmd_file_path, cmd_file_name);
     
 
     /*--- Чтение настроечного файла ---*/
