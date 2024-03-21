@@ -8,14 +8,14 @@ ONESHOT_SCRIPT_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/.sh/oneshot_script_server045
 
 LOG_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/.log/log_server0451"
 
-read -p "Run server0451 in (l)oop or (o)neshot mode?" MODE
+read -p "Do you want to run server0451 in (l)oop or (o)neshot mode?" MODE
 
 if [ "$MODE" = "l" ] || [ "$MODE" = "L" ]; then
     nohup $LOOP_SCRIPT_FILE_PATH >> $LOG_FILE_PATH 2>&1 &
 elif [ "$MODE" = "o" ] || [ "$MODE" = "O" ]; then
     nohup $ONESHOT_SCRIPT_FILE_PATH >> $LOG_FILE_PATH 2>&1 &
 else
-    echo "Inser [l/L] for loop mode or [o/O] for oneshot mode".
+    echo "Insert [l/L] for loop mode or [o/O] for oneshot mode".
 fi
 
 MAX_LOG_SIZE=5000000

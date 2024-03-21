@@ -50,7 +50,7 @@
 void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_name, uint32_t *verbosity_level);
 
 // Вывести в консоль текущее время в человекочитаемом формате.
-void print_timestamp();
+void print_timestamp(uint32_t port);
 
 // Проверка упоминания HTTP.
 bool HTTP_is_mentioned(char *buf);
@@ -79,7 +79,7 @@ int main(int32_t argc, char *argv[])
 	if (verbosity_level > 0) {
 	    printf("\n\n* * * * * * * * * * * * * * * * * *\n");
 	    printf("Starting TCP server at port %d\n", port);
-	    print_timestamp();
+	    print_timestamp(port);
 	    printf("* * * * * * * * * * * * * * * * * *\n");
 	}
 
@@ -215,7 +215,7 @@ void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_name,
 }
 
 // Вывести в консоль текущее время в человекочитаемом формате.
-void print_timestamp()
+void print_timestamp(uint32_t port)
 {
     #define BUF_LEN 50
 
@@ -226,8 +226,8 @@ void print_timestamp()
 	posix_time = time(NULL);
 	time_fields = localtime(&posix_time);
 
-	strftime(buf, BUF_LEN, "Date: %d.%m.%Y, time (UTC): %H:%M:%S", time_fields);
-	printf("%s\n", buf);
+	strftime(buf, BUF_LEN, "date: %d.%m.%Y, time (UTC): %H:%M:%S", time_fields);
+	printf("Port %u, %s\n", port, buf);
 }
 
 bool HTTP_is_mentioned(char *buf)
@@ -323,6 +323,7 @@ void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
 
         if (verbosity_level > 0) {
             printf("%s", ptr);
+            printf("Communication closed.\n");
         }
 
         write(connfd, buf, strlen(buf));
@@ -344,6 +345,7 @@ void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
     
         if (verbosity_level > 0) {
             printf("%s", ptr);
+            printf("Communication closed.\n");
         }
 
         write(connfd, buf, strlen(buf));
@@ -363,6 +365,7 @@ void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
         if (verbosity_level > 0) {
             printf("Current command requested.\n");
             printf("Current command sent: %s", buf);
+            printf("Communication closed.\n");
         }
 
         write(connfd, buf, strlen(buf));
@@ -374,6 +377,7 @@ void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
 	 */
     if (verbosity_level > 0) {
         printf("No valid command received.\n");
+        printf("Communication closed.\n");
     }
 
     memset(buf, '\0', sizeof(buf));
