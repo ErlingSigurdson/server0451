@@ -17,7 +17,7 @@
 
 #define PRINT_HELP_PAGE                                                                                    \
 puts("Simple Linux TCP server for IoT written in C language.");                                            \
-puts("Usage (start server): server0451 -p <port> -f <cmd_file_name> [-h][-v][-V]");                        \
+puts("Usage (start server): server0451 -p <port> -f <cmd_config_file_name> [-h][-v][-V]");                        \
 puts("Example: server0451 -p 80 -f configs_server0451 -v");                                                \
 puts("");                                                                                                  \
 puts("Options:");                                                                                          \
