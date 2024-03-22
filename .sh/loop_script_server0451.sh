@@ -36,7 +36,7 @@ done &
 
 LOG_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/../.log/log_server0451"
 
-MAX_LOG_SIZE=50000
+MAX_LOG_SIZE=50000000
 
 while true; do
     LOG_SIZE=$(stat $LOG_FILE_PATH | grep -E -o "Size: [0-9]*" | grep -E -o "[0-9]*")

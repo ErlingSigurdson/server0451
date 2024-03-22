@@ -58,29 +58,18 @@ puts("Go to /server0451/src directory and run make utility to build a program ex
 puts("");                                                                                                    \
 puts("In order to start server0451, run server0451.sh (an executable shell script) and choose between)");    \
 puts("loop mode (for continuous listening) and oneshot mode (for a test run). In both cases program is");    \
-puts("run using nohup utility, and its stdout and stderr are redirected to a file");                         \
+puts("run using nohup utility, and its stdout and stderr are redirected to a file log file at");             \
 puts("/server0451/.log/log_server0451.");                                                                    \
 puts("");                                                                                                    \
-puts("If you want to control separate groups of IoT devices which are not supposed to update and read");     \
+puts("");                                                                                                    \
+puts("/*--- MISC ---*/");                                                                                    \
+puts("");                                                                                                    \
+puts("1) Server logs are stored at /server0451/.log/log_server0451.");                                       \
+puts("");                                                                                                    \
+puts("2) If you want to control separate groups of IoT devices which are not supposed to update and read");  \
 puts("the same prescribed load status (aren't meant to share it), consider creating two or more separate");  \
 puts("directories containing all server0451 files and provide different PORT_1 and PORT_2 values in");       \
-puts("/.config/port_config_server0451 for every device flock.");                                 \
-puts("2) either provide different PORT_1 values in /.config/port_config_server0451 for every device flock"); \                                                                                                   \
-puts("or provide different ");                                                                                                    \
-puts("");                                                                                                    \
-puts("");                                                                                                    \
-
-
-/*
-creating two or more separate"); \
-puts("directories containing all server0451 files and provide separate PORT_2 values by editing");  \
-puts("/.config/port_config_server0451 in every directory. ");                                                        \                  
-
-
-. loop_script_server0451.sh several times, with different configuration file names specified.");       \
-puts("After that you should slightly alter your configuration files so that command syntax would be");     \
-puts("at least slightly different for each one.");
-*/
+puts("/.config/port_config_server0451 for every separate device flock. It's sloppy, I know.");
 
 
 #endif  // Защита от повторного включения заголовочного файла.
