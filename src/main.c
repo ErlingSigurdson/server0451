@@ -4,7 +4,7 @@
  * Имя файла: main.c
  * ----------------------------------------------------------------------------|---------------------------------------|
  * Назначение: основной файл с исходным кодом простого TCP-сервера для Linux,
- * написанным на языке Си.
+ * написанным на языке Си. Сервер рассчитан на применение в IoT.
  * ----------------------------------------------------------------------------|---------------------------------------|
  * Примечания:
  */
@@ -19,12 +19,13 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <string.h>
-#include <stdlib.h>
+#include <stdlib.h>      // exit().
 #include <errno.h>
 
-// Из других библиотек.
-#include <unistd.h>  // getopt(), read(), write(), close().
+// Из библиотек POSIX.
+#include <unistd.h>      // getopt(), read(), write(), close().
 #include <netinet/in.h>
+#include <time.h>
 
 /* Эти заголовочные файлы упоминаются в примерах серверов, написанных на языке Си,
  * но код компилируется и работает и без них.
@@ -46,13 +47,16 @@
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/
 
 // Обработчик опций командной строки и их аргументов.
-void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_name, uint32_t *verbosity_level);
+void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_config_file_name, uint32_t *verbosity_level);
+
+// Вывод в консоль текущего времени в человекочитаемом формате.
+void print_timestamp(uint32_t port);
 
 // Проверка упоминания HTTP.
 bool HTTP_is_mentioned(char *buf);
 
 // Обработчик входящих команд.
-void cmd_handler(int32_t connfd, char *cmd_file_path, uint32_t verbosity_level);
+void cmd_handler(int32_t connfd, char *cmd_config_file_path, uint32_t verbosity_level);
 
 
 /******************** ФУНКЦИИ *******************/
@@ -63,11 +67,11 @@ int main(int32_t argc, char *argv[])
 
     // Переменные для хранения значений, переданных из командной строки.
     int32_t port = -1;  // По умолчанию задано невалидное значение.
-    char cmd_file_name[STR_MAX_LEN + 1] = {0};
+    char cmd_config_file_name[STR_MAX_LEN + 1] = {0};
     uint32_t verbosity_level = 0;
 
     // Поиск и чтение опций командной строки и их аргументов.
-    opt_handler(argc, argv, &port, cmd_file_name, &verbosity_level);
+    opt_handler(argc, argv, &port, cmd_config_file_name, &verbosity_level);
 
 
     /*--- Работа с сокетами ---*/
@@ -75,6 +79,7 @@ int main(int32_t argc, char *argv[])
 	if (verbosity_level > 0) {
 	    printf("\n\n* * * * * * * * * * * * * * * * * *\n");
 	    printf("Starting TCP server at port %d\n", port);
+	    print_timestamp(port);
 	    printf("* * * * * * * * * * * * * * * * * *\n");
 	}
 
@@ -85,11 +90,11 @@ int main(int32_t argc, char *argv[])
     // Создание сокета.
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
-        printf("\nSocket creation failed. Terminating the program.\n");
-        printf("Error description: %s\n", strerror(errno));
+        fprintf(stderr, "\nSocket creation at port %d failed. Terminating the program.\n", port);
+        fprintf(stderr, "Error description: %s\n", strerror(errno));
         exit(1);
     } else if (verbosity_level > 0) {
-    	printf("\n...socket successfully created.\n");
+    	printf("\n...socket successfully created at port %d.\n", port);
     }
 
     // Заполнение нулями.
@@ -126,35 +131,35 @@ int main(int32_t argc, char *argv[])
 
     // Привязать вновь соданный сокет к IP.
     if ((bind(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr))) != 0) {
-        printf("\nSocket binding failed. Terminating the program.\n");
-        printf("Error description: %s\n", strerror(errno));
+        fprintf(stderr, "\nSocket binding at port %d failed. Terminating the program.\n", port);
+        fprintf(stderr, "Error description: %s\n", strerror(errno));
         exit(1);
     } else if (verbosity_level > 0) {
-        printf("...socket successfully bound.\n");
+        printf("...socket successfully bound at port %d.\n", port);
     }
 
     // Сервер начинает слушать.
     if ((listen(sockfd, 5)) != 0) {
-        printf("\nEntering a listen mode failed. Terminating the program.\n");
-        printf("Error description: %s\n", strerror(errno));
+        fprintf(stderr, "\nEntering a listen mode at port %d failed. Terminating the program.\n", port);
+        fprintf(stderr, "Error description: %s\n", strerror(errno));
         exit(1);
     } else if (verbosity_level > 0) {
-        printf("...server is listening.\n");
+        printf("...server is listening at port %d.\n", port);
     }
 
     // Принимаем и проверяем сообщение от клиента.
     len = sizeof(cli);
     connfd = accept(sockfd, (struct sockaddr*)&cli, (socklen_t*)&len);
     if (connfd < 0) {
-        printf("\nServer failed to accept the client. Terminating the program.\n");
-        printf("Error description: %s\n", strerror(errno));
+        fprintf(stderr, "\nServer failed to accept the client at port %d. Terminating the program.\n", port);
+        fprintf(stderr, "Error description: %s\n", strerror(errno));
         exit(1);
     } else if (verbosity_level > 0) {
-        printf("\nServer accepted a client. Starting communication.\n");
+        printf("\nServer accepted a client at port %d. Starting communication.\n", port);
     }
 
     // Вызываем функцию-обработчик поступивших команд.
-    cmd_handler(connfd, cmd_file_name, verbosity_level);
+    cmd_handler(connfd, cmd_config_file_name, verbosity_level);
 
     // Закрытие сокета.
     //shutdown(sockfd, SHUT_RDWR);  // Вроде бы не нужно, но иногда упоминается.
@@ -163,7 +168,7 @@ int main(int32_t argc, char *argv[])
     return 0;
 }
 
-void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_name, uint32_t *verbosity_level)
+void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_config_file_name, uint32_t *verbosity_level)
 {
     int32_t opt = 0;
     while ((opt = getopt(argc, argv, "p:f:vVh")) >= 0) {
@@ -175,7 +180,7 @@ void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_name,
 
             // Обязательная опция.
             case 'f':
-                sscanf(optarg, "%s", cmd_file_name);
+                sscanf(optarg, "%s", cmd_config_file_name);
                 break;
 
             case 'v':
@@ -197,16 +202,32 @@ void opt_handler(int32_t argc, char *argv[], int32_t *port, char *cmd_file_name,
     }
 
     if (*port < 0) {
-        printf("Please restart the program and insert a valid port number as a -p option argument.\n");
+        fprintf(stderr, "Please restart the program and insert a valid port number as a -p option argument.\n");
         exit(1);
     }
 
-    if (strchr(cmd_file_name, '/') != NULL || strlen(cmd_file_name) == 0) {
-        printf("Please restart the program and insert a valid name for a command configuration file\n");
-        printf("as an -f option argument. If such file doesn't exist, the program will create it\n");
-        printf("at server0451/bin directory automatically. The file will contain default values.\n");
+    if (strchr(cmd_config_file_name, '/') != NULL || strlen(cmd_config_file_name) == 0) {
+        fprintf(stderr, "Please restart the program and insert a valid name for a command configuration file\n");
+        fprintf(stderr, "as an -f option argument. If such file doesn't exist, the program will create it\n");
+        fprintf(stderr, "at server0451/bin directory automatically. The file will contain default values.\n");
         exit(1);
     }
+}
+
+// Вывести в консоль текущее время в человекочитаемом формате.
+void print_timestamp(uint32_t port)
+{
+    #define BUF_LEN 50
+
+	time_t posix_time;
+	char buf[BUF_LEN] = {0};
+	struct tm *time_fields;
+
+	posix_time = time(NULL);
+	time_fields = localtime(&posix_time);
+
+	strftime(buf, BUF_LEN, "date: %d.%m.%Y, time (UTC): %H:%M:%S", time_fields);
+	printf("Port %u, %s\n", port, buf);
 }
 
 bool HTTP_is_mentioned(char *buf)
@@ -218,21 +239,22 @@ bool HTTP_is_mentioned(char *buf)
     }
 }
 
-void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
+void cmd_handler(int32_t connfd, char *cmd_config_file_name, uint32_t verbosity_level)
 {
     /*--- Нахождение полного пути к настроечному файлу ---*/
         
-    char cmd_file_path[CMD_FILE_NAME_LEN] = {0};
-    readlink("/proc/self/exe", cmd_file_path, sizeof(cmd_file_path));
-    char *ptr = strrchr(cmd_file_path, '/') + 1;
-    strcpy(ptr, cmd_file_name);    
+    char cmd_config_file_path[CMD_CONFIG_FILE_NAME_LEN] = {0};
+    readlink("/proc/self/exe", cmd_config_file_path, sizeof(cmd_config_file_path));
+    char *ptr = strrchr(cmd_config_file_path, '/') + 1;
+    strcpy(ptr, "../.config/");
+    strcat(cmd_config_file_path, cmd_config_file_name);
     
 
     /*--- Чтение настроечного файла ---*/
 
     // Считывание значений.
-    char cmd_file_contents[CMD_FILE_LIST_LEN][STR_MAX_LEN] = {0};
-    cmd_file_read_else_write_defaults(cmd_file_contents, cmd_file_path);
+    char cmd_config_file_contents[CMD_CONFIG_FILE_LIST_LEN][STR_MAX_LEN] = {0};
+    cmd_config_file_read_else_write_defaults(cmd_config_file_contents, cmd_config_file_path);
 
 
     /*--- Чтение направленных клиентом данных ---*/
@@ -254,19 +276,19 @@ void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
     /*--- Поиск и обработка поступившей команды ---*/
 
 	// Поиск команды в поступившем от клиента сообщении.
-    bool is_setloadon = strstr(buf, cmd_file_contents[CMD_FILE_ASCII_CMD_ON]) ||         \
-                        strstr(buf, cmd_file_contents[CMD_FILE_URI_CMD_ON])   ||         \
-                        strstr(buf, cmd_file_contents[CMD_FILE_VAL_CMD_ON]) ;
+    bool is_setloadon = strstr(buf, cmd_config_file_contents[CMD_CONFIG_FILE_ASCII_CMD_ON]) ||         \
+                        strstr(buf, cmd_config_file_contents[CMD_CONFIG_FILE_URI_CMD_ON])   ||         \
+                        strstr(buf, cmd_config_file_contents[CMD_CONFIG_FILE_VAL_CMD_ON]) ;
 
-    bool is_setloadoff = strstr(buf, cmd_file_contents[CMD_FILE_ASCII_CMD_OFF]) ||       \
-                         strstr(buf, cmd_file_contents[CMD_FILE_URI_CMD_OFF])   ||       \
-                         strstr(buf, cmd_file_contents[CMD_FILE_VAL_CMD_OFF]) ;
+    bool is_setloadoff = strstr(buf, cmd_config_file_contents[CMD_CONFIG_FILE_ASCII_CMD_OFF]) ||       \
+                         strstr(buf, cmd_config_file_contents[CMD_CONFIG_FILE_URI_CMD_OFF])   ||       \
+                         strstr(buf, cmd_config_file_contents[CMD_CONFIG_FILE_VAL_CMD_OFF]) ;
 
-    bool is_setloadtoggle = strstr(buf, cmd_file_contents[CMD_FILE_ASCII_CMD_TOGGLE]) || \
-                            strstr(buf, cmd_file_contents[CMD_FILE_URI_CMD_TOGGLE])   || \
-                            strstr(buf, cmd_file_contents[CMD_FILE_VAL_CMD_TOGGLE]) ;
+    bool is_setloadtoggle = strstr(buf, cmd_config_file_contents[CMD_CONFIG_FILE_ASCII_CMD_TOGGLE]) || \
+                            strstr(buf, cmd_config_file_contents[CMD_CONFIG_FILE_URI_CMD_TOGGLE])   || \
+                            strstr(buf, cmd_config_file_contents[CMD_CONFIG_FILE_VAL_CMD_TOGGLE]) ;
 
-    bool is_request = strstr(buf, cmd_file_contents[CMD_FILE_REQUEST_CMD]);
+    bool is_request = strstr(buf, cmd_config_file_contents[CMD_CONFIG_FILE_REQUEST_CMD]);
 
     bool is_HTTP = HTTP_is_mentioned(buf);
 
@@ -274,7 +296,7 @@ void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
 	/*--- Запись в файл нового предписываемого состояния нагрузки и направление ответа клиенту ---*/
 
 	// Проверка текущего предписываемого состояния нагрузки.
-	bool current_load_status_cmd = cmd_file_contents[CMD_FILE_CURRENT_CMD][0] - '0';
+	bool current_load_status_cmd = cmd_config_file_contents[CMD_CONFIG_FILE_CURRENT_CMD][0] - '0';
 	
     if (is_setloadtoggle) {
         if (current_load_status_cmd) {
@@ -287,7 +309,7 @@ void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
     }
 
     if (is_setloadon) {
-        cmd_file_update_current_load_status_cmd(cmd_file_path, 1);
+        cmd_config_file_update_current_load_status_cmd(cmd_config_file_path, 1);
 
         memset(buf, '\0', sizeof(buf));
         char *ptr = buf;
@@ -301,6 +323,7 @@ void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
 
         if (verbosity_level > 0) {
             printf("%s", ptr);
+            printf("Communication closed.\n");
         }
 
         write(connfd, buf, strlen(buf));
@@ -308,7 +331,7 @@ void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
     }
 
     if (is_setloadoff) {
-        cmd_file_update_current_load_status_cmd(cmd_file_path, 0);
+        cmd_config_file_update_current_load_status_cmd(cmd_config_file_path, 0);
         
         memset(buf, '\0', sizeof(buf));
         char *ptr = buf;
@@ -322,6 +345,7 @@ void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
     
         if (verbosity_level > 0) {
             printf("%s", ptr);
+            printf("Communication closed.\n");
         }
 
         write(connfd, buf, strlen(buf));
@@ -330,9 +354,9 @@ void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
         
     if (is_request) {
         if (current_load_status_cmd) {
-        	strcpy(buf, cmd_file_contents[CMD_FILE_ASCII_CMD_ON]);	
+        	strcpy(buf, cmd_config_file_contents[CMD_CONFIG_FILE_ASCII_CMD_ON]);	
         } else {
-        	strcpy(buf, cmd_file_contents[CMD_FILE_ASCII_CMD_OFF]);
+        	strcpy(buf, cmd_config_file_contents[CMD_CONFIG_FILE_ASCII_CMD_OFF]);
         }
 
 		// Позволяет клиенту быстрее считать ответ, реагируя на символ конца строки.
@@ -340,6 +364,8 @@ void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
 
         if (verbosity_level > 0) {
             printf("Current command requested.\n");
+            printf("Current command sent: %s", buf);
+            printf("Communication closed.\n");
         }
 
         write(connfd, buf, strlen(buf));
@@ -351,6 +377,7 @@ void cmd_handler(int32_t connfd, char *cmd_file_name, uint32_t verbosity_level)
 	 */
     if (verbosity_level > 0) {
         printf("No valid command received.\n");
+        printf("Communication closed.\n");
     }
 
     memset(buf, '\0', sizeof(buf));
