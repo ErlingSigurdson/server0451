@@ -58,7 +58,7 @@ puts("Go to /server0451/src directory and run make utility to build a program ex
 puts("");                                                                                                    \
 puts("In order to start server0451, run server0451.sh (an executable shell script) and choose between)");    \
 puts("loop mode (for continuous listening) and oneshot mode (for a test run). In both cases program is");    \
-puts("run using nohup utility, and its stdout and stderr are redirected to a file log file at");             \
+puts("run using nohup utility, and its stdout and stderr are redirected to a log file at");                  \
 puts("/server0451/.log/log_server0451.");                                                                    \
 puts("");                                                                                                    \
 puts("");                                                                                                    \
