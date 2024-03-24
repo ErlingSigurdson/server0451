@@ -24,7 +24,7 @@
 #include <string.h>
 
 // Из библиотек POSIX.
-#include <regexp.h>
+#include <regex.h>
 
 
 /*--- Прочее ---*/
