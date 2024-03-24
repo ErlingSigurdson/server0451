@@ -22,7 +22,7 @@
 #define STR_MAX_LEN 1000
 
 // Формат, которому должны следовать сообщения от клиентов.
-#define MSG_FORMAT_REGEX_PATTERN "[tT][oO][pP][iI][cC]_[1-9]*[1-9]:[aA][tT]\\+[a-zA-Z]+[=]*[a-zA-Z]*"
+#define MSG_FORMAT_REGEX_PATTERN "[tT][oO][pP][iI][cC]_([1-9][0-9]{0,1}|100):[aA][tT]\\+[a-zA-Z]+[=]*[a-zA-Z]*"
 
 
 #endif  // Защита от повторного включения заголовочного файла.
