@@ -23,7 +23,6 @@
 // Локальные модули.
 #include "utilities.h"
 #include "cmd.h"
-#include "msg_format_check_regex.h"
 #include "sockets.h"
 
 
@@ -46,46 +45,16 @@ void cmd_extract(char *buf, char *buf_topic, char *buf_cmd, char delim)
 
 void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
 {
-    /*--- Проверка формата сообщения от клиента ---*/
-
-    utilities_nullify_all_CR_and_LF_in_char_array(buf, (STR_MAX_LEN + 1));
+    /* --- Извлечение имени топика и команды из сообщения ---*/
     
-    uint32_t msg_format_check_result = msg_format_check_regex(buf, MSG_FORMAT_REGEX_PATTERN);
-    switch (msg_format_check_result) {
-        case 0:
-            // Message format check success.
-            break;
-        case 1:
-            printf("Message format check failed: partial match.");
-            strcpy(buf, "Message format check failed: partial match.");
-            sockets_write_message(connfd, buf, verbosity_level);
-            exit(1);
-        case 2:
-            printf("Message format check failed: no match found.");
-            strcpy(buf, "Message format check failed: no match found.");
-            sockets_write_message(connfd, buf, verbosity_level);
-            exit(1);
-        case 3:
-            printf("Message format check failed: error compiling regex.");
-            strcpy(buf, "Message format check failed: error compiling regex.");
-            sockets_write_message(connfd, buf, verbosity_level);
-            exit(1);
-        default:
-            // Do nothing and hail MISRA.
-            break;
-        }
-
     char buf_topic[STR_MAX_LEN + 1] = {0};
     char buf_cmd[STR_MAX_LEN + 1] = {0};
     cmd_extract(buf, buf_topic, buf_cmd, DELIM);
 
-    printf("DEBUG. buf_topic:%s\n", buf_topic);
-    printf("DEBUG. buf_cmd:%s\n", buf_cmd);
-
 
     /*--- Определение пути к файлу топика ---*/
         
-    char topic_file_path[STR_MAX_LEN + 1] = {0};
+    char topic_file_path[STR_MAX_LEN * 2 + 1] = {0};
     readlink("/proc/self/exe", topic_file_path, sizeof(topic_file_path));
     char *ptr = strrchr(topic_file_path, '/') + 1;
     strcpy(ptr, "../.topics/");
@@ -107,6 +76,10 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
         } else if (!strcmp(buf_cmd, CMD_LOAD_OFF)) {
             current_cmd_on = 1;
         } else {
+            printf("DEBUG. Posted cmd: %s\n", buf_cmd);
+            printf("DEBUG. Posted cmd len: %lu\n", strlen(buf_cmd));
+            printf("DEBUG. Hardcoded cmd len: %lu\n", strlen(CMD_LOAD_ON));
+            
             printf("Error: couldn't toggle current load state (invalid data in the topic).");
             strcpy(buf, "Error: couldn't toggle current load state (invalid data in the topic).");
             sockets_write_message(connfd, buf, verbosity_level);
@@ -115,7 +88,7 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
     }
     
     if (current_cmd_on) {
-        utilities_write_to_file_single_line(buf_cmd, topic_file_path);
+        utilities_write_to_file_single_line(CMD_LOAD_ON, topic_file_path);
         strcpy(buf, "New command posted: " CMD_LOAD_ON);
          
         printf("%s\n", buf);
@@ -124,7 +97,7 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
     }
         
     if (current_cmd_off) {
-        utilities_write_to_file_single_line(buf_cmd, topic_file_path);
+        utilities_write_to_file_single_line(CMD_LOAD_OFF, topic_file_path);
         strcpy(buf, "New command posted: " CMD_LOAD_OFF);
          
         printf("%s\n", buf);

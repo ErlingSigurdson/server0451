@@ -40,8 +40,8 @@
 
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/
 
-void sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level);
-void sockets_set_connection(int32_t sockfd, int32_t *connfd, int32_t port, uint32_t verbosity_level);
+uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level);
+uint32_t sockets_set_connection(int32_t sockfd, int32_t *connfd, int32_t port, uint32_t verbosity_level);
 void sockets_read_message(int32_t connfd, char *buf, size_t buf_size, uint32_t verbosity_level);
 void sockets_write_message(int32_t connfd, char *buf, uint32_t verbosity_level);
 void sockets_close(int32_t sockfd);
