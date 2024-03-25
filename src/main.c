@@ -19,16 +19,16 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <string.h>
-#include <stdlib.h>      // exit().
+#include <stdlib.h>
 
 // Из библиотек POSIX.
+#include <unistd.h>
 #include <time.h>
 
 // Настройки проекта.
 #include "config_general.h"
 
 // Локальные модули.
-#include "utilities.h"
 #include "sockets.h"
 #include "cmd.h"
 #include "help_page.h"
@@ -36,27 +36,25 @@
 
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/
 
-// Обработка опций командной строки и их аргументов.
+// Чтение опций командной строки и их аргументов.
 void opt_handle(int32_t argc, char *argv[], int32_t *port, uint32_t *verbosity_level);
 
-// Вывод в консоль текущего времени в человекочитаемом формате.
+// Вывод в консоль текущего времени (UTC) в человекочитаемом формате.
 void print_timestamp(uint32_t port);
-
-// Обработка входящих команд.
-//void cmd_handler(int32_t connfd, char *cmd_config_file_path, uint32_t verbosity_level);
 
 
 /******************** ФУНКЦИИ *******************/
 
 int32_t main(int32_t argc, char *argv[])
 {
-    /*--- Обработка опций командной строки и их аргументов ---*/
+    /*--- Чтение и обработка опций командной строки и их аргументов ---*/
 
     // Переменные для хранения значений, переданных из командной строки.
     int32_t port = -1;             // По умолчанию задано невалидное значение.
     uint32_t verbosity_level = 0;
 
-    // Поиск и чтение опций командной строки и их аргументов.
+    // Основная функция, имеющая дело с опциями командной строки и их аргументами.
+    // В случае введения ключа вывода страницы с руководством выполнение программы будет прервано.
     opt_handle(argc, argv, &port, &verbosity_level);
 
     if (port <= 0) {
@@ -86,6 +84,7 @@ int32_t main(int32_t argc, char *argv[])
     char buf[STR_MAX_LEN + 1] = {0};
     sockets_read_message(connfd, buf, sizeof(buf), verbosity_level);
 
+    // В случае ошибки в формате сообщения, полученного от клиента, выполнение программы будет прервано.
     cmd_handle(connfd, buf, verbosity_level);
 
 	sockets_close(sockfd);
@@ -126,15 +125,13 @@ void opt_handle(int32_t argc, char *argv[], int32_t *port, uint32_t *verbosity_l
 // Вывести в консоль текущее время в человекочитаемом формате.
 void print_timestamp(uint32_t port)
 {
-    #define TIMESTAMP_STR_MAX_LEN 50
-
 	time_t posix_time;
-	char buf[TIMESTAMP_STR_MAX_LEN] = {0};
+	char buf[STR_MAX_LEN + 1] = {0};
 	struct tm *time_fields;
 
 	posix_time = time(NULL);
 	time_fields = localtime(&posix_time);
 
-	strftime(buf, TIMESTAMP_STR_MAX_LEN, "date: %d.%m.%Y, time (UTC): %H:%M:%S", time_fields);
+	strftime(buf, sizeof(buf), "date: %d.%m.%Y, time (UTC): %H:%M:%S", time_fields);
 	printf("Port %u, %s\n", port, buf);
 }

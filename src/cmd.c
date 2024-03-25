@@ -82,13 +82,25 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
     printf("DEBUG. buf_topic:%s\n", buf_topic);
     printf("DEBUG. buf_cmd:%s\n", buf_cmd);
 
+
+    /*--- Определение пути к файлу топика ---*/
+        
+    char topic_file_path[STR_MAX_LEN + 1] = {0};
+    readlink("/proc/self/exe", topic_file_path, sizeof(topic_file_path));
+    char *ptr = strrchr(topic_file_path, '/') + 1;
+    strcpy(ptr, "../.topics/");
+    strcat(topic_file_path, buf_topic);
+
+
+    /*--- Выполнение команды ---*/
+
     bool current_cmd_on =            !strcmp(buf_cmd, CMD_LOAD_ON);
     bool current_cmd_off =           !strcmp(buf_cmd, CMD_LOAD_OFF);
     bool current_cmd_toggle =        !strcmp(buf_cmd, CMD_LOAD_TOGGLE);
     bool current_cmd_request_topic = !strcmp(buf_cmd, CMD_REQUEST_TOPIC);
     
     if (current_cmd_toggle) {
-        utilities_read_from_file_single_line(buf_cmd, sizeof(buf_cmd), buf_topic);
+        utilities_read_from_file_single_line(buf_cmd, sizeof(buf_cmd), topic_file_path);
     
         if (!strcmp(buf_cmd, CMD_LOAD_ON)) {
             current_cmd_off = 1;
@@ -98,12 +110,12 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
             printf("Error: couldn't toggle current load state (invalid data in the topic).");
             strcpy(buf, "Error: couldn't toggle current load state (invalid data in the topic).");
             sockets_write_message(connfd, buf, verbosity_level);
-            exit(1);
+            return;
         }
     }
     
     if (current_cmd_on) {
-        utilities_write_to_file_single_line(buf_cmd, buf_topic);
+        utilities_write_to_file_single_line(buf_cmd, topic_file_path);
         strcpy(buf, "New command posted: " CMD_LOAD_ON);
          
         printf("%s\n", buf);
@@ -112,7 +124,7 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
     }
         
     if (current_cmd_off) {
-        utilities_write_to_file_single_line(buf_cmd, buf_topic);
+        utilities_write_to_file_single_line(buf_cmd, topic_file_path);
         strcpy(buf, "New command posted: " CMD_LOAD_OFF);
          
         printf("%s\n", buf);
