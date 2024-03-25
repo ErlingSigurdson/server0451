@@ -97,7 +97,7 @@ uint32_t sockets_set_connection(int32_t sockfd, int32_t *connfd, int32_t port, u
 
     // Сервер начинает слушать.
     if ((listen(sockfd, 5)) != 0) {
-        return 0;
+        return 2;
     } else if (verbosity_level > 0) {
         printf("...server is listening at port %d.\n", port);
     }

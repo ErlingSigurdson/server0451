@@ -38,6 +38,15 @@
 //#include <sys/types.h>
 
 
+/*--- Прочее ---*/
+
+// Коды ошибок.
+#define SOCKETS_ERR_CREATE 2
+#define SOCKETS_ERR_BIND   1
+#define SOCKETS_ERR_LISTEN 2
+#define SOCKETS_ERR_ACCEPT 1
+
+
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/
 
 uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level);

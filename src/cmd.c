@@ -49,7 +49,7 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
     
     char buf_topic[STR_MAX_LEN + 1] = {0};
     char buf_cmd[STR_MAX_LEN + 1] = {0};
-    cmd_extract(buf, buf_topic, buf_cmd, DELIM);
+    cmd_extract(buf, buf_topic, buf_cmd, DELIM_CHAR);
 
 
     /*--- Определение пути к файлу топика ---*/
@@ -66,7 +66,7 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
     bool current_cmd_on =            !strcmp(buf_cmd, CMD_LOAD_ON);
     bool current_cmd_off =           !strcmp(buf_cmd, CMD_LOAD_OFF);
     bool current_cmd_toggle =        !strcmp(buf_cmd, CMD_LOAD_TOGGLE);
-    bool current_cmd_request_topic = !strcmp(buf_cmd, CMD_REQUEST_TOPIC);
+    bool current_cmd_request_topic = !strcmp(buf_cmd, CMD_TOPIC_REQUEST);
     
     if (current_cmd_toggle) {
         utilities_read_from_file_single_line(buf_cmd, sizeof(buf_cmd), topic_file_path);

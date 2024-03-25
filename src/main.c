@@ -3,8 +3,8 @@
 /**
  * Имя файла: main.c
  * ----------------------------------------------------------------------------|---------------------------------------|
- * Назначение: основной файл с исходным кодом простого TCP-сервера для Linux,
- * написанным на языке Си. Сервер рассчитан на применение в IoT.
+ * Назначение: основной файл с исходным кодом простого TCP-сервера IoT
+ * для Linux, написанным на языке Си.
  * ----------------------------------------------------------------------------|---------------------------------------|
  * Примечания:
  */
@@ -29,6 +29,7 @@
 #include "config_general.h"
 
 // Локальные модули.
+#include "utilities.h"
 #include "sockets.h"
 #include "cmd.h"
 #include "msg_format_check_regex.h"
@@ -40,8 +41,8 @@
 // Чтение опций командной строки и их аргументов.
 void opt_handle(int32_t argc, char *argv[], int32_t *port, uint32_t *verbosity_level);
 
-// Вывод в консоль текущего времени (UTC) в человекочитаемом формате.
-void print_timestamp(uint32_t port);
+// Вывод в консоль текущей даты и времени (UTC+0) в человекочитаемом формате.
+void timestamp_print(uint32_t port);
 
 
 /******************** ФУНКЦИИ *******************/
@@ -54,8 +55,7 @@ int32_t main(int32_t argc, char *argv[])
     int32_t port = -1;             // По умолчанию задано невалидное значение.
     uint32_t verbosity_level = 0;
 
-    // Основная функция, имеющая дело с опциями командной строки и их аргументами.
-    // В случае введения ключа вывода страницы с руководством выполнение программы будет прервано.
+    // Чтение опций командной строки и их аргументов.
     opt_handle(argc, argv, &port, &verbosity_level);
 
     if (port <= 0) {
@@ -66,8 +66,8 @@ int32_t main(int32_t argc, char *argv[])
 
     if (verbosity_level > 0) {
         printf("\n\n* * * * * * * * * * * * * * * * * * * * * * * *\n");
-        printf("        Starting TCP server at port %d\n", port);
-        print_timestamp(port);
+        printf("               Starting TCP IoT server");
+        timestamp_print(port);
         printf("* * * * * * * * * * * * * * * * * * * * * * * *\n");
     }
 
@@ -77,17 +77,17 @@ int32_t main(int32_t argc, char *argv[])
     int32_t sockfd = 0;
     uint32_t init_result = sockets_init(&sockfd, port, verbosity_level);
     switch (init_result) {
-        case 2:
-            fprintf(stderr, "\nError: socket creation at port %d failed. Terminating the program.\n", port);
+        case SOCKETS_ERR_CREATE:
+            fprintf(stderr, "\nError: socket creation at port %d failed.\n", port);
             fprintf(stderr, "Error description: %s\n", strerror(errno));
             exit(1);
             break;
-        case 1:
-            fprintf(stderr, "\nSocket binding at port %d failed. Terminating the program.\n", port);
+        case SOCKETS_ERR_BIND:
+            fprintf(stderr, "\nError: socket binding at port %d failed.\n", port);
             fprintf(stderr, "Error description: %s\n", strerror(errno));
             exit(1);
         case 0:
-            // Успешная инициализация сокета..
+            // Успешная инициализация сокета.
             break;
         default:
             // Ничего не делаем, отдаём дань MISRA.
@@ -97,12 +97,12 @@ int32_t main(int32_t argc, char *argv[])
 	int32_t connfd = 0;
 	uint32_t set_connection_result = sockets_set_connection(sockfd, &connfd, port, verbosity_level);
     switch (set_connection_result) {
-        case 2:
-            fprintf(stderr, "\nEntering a listen mode at port %d failed. Terminating the program.\n", port);
+        case SOCKETS_ERR_LISTEN:
+            fprintf(stderr, "\nError: entering a listen mode at port %d failed.\n", port);
             fprintf(stderr, "Error description: %s\n", strerror(errno));
             exit(1);
-        case 1:
-            fprintf(stderr, "\nServer failed to accept the client at port %d. Terminating the program.\n", port);
+        case SOCKETS_ERR_ACCEPT:
+            fprintf(stderr, "\nError: server failed to accept a client at port %d.\n", port);
             fprintf(stderr, "Error description: %s\n", strerror(errno));
             exit(1);
         case 0:
@@ -138,7 +138,7 @@ int32_t main(int32_t argc, char *argv[])
             sockets_write_message(connfd, buf, verbosity_level);
             exit(1);
         case 0:
-            // Проверка формата пройдена.
+            // Проверка формата сообщения пройдена.
             break;
         default:
             // Ничего не делаем, отдаём дань MISRA.
@@ -148,7 +148,6 @@ int32_t main(int32_t argc, char *argv[])
 
     /*--- Обработка поступившей команды ---*/
 
-    // В случае ошибки в формате сообщения, полученного от клиента, выполнение программы будет прервано.
     cmd_handle(connfd, buf, verbosity_level);
 
 
@@ -192,15 +191,15 @@ void opt_handle(int32_t argc, char *argv[], int32_t *port, uint32_t *verbosity_l
     }
 }
 
-// Вывести в консоль текущее время в человекочитаемом формате.
+// Вывести в консоль текущее время (UTC+0) в человекочитаемом формате.
 void print_timestamp(uint32_t port)
 {
+    char buf[STR_MAX_LEN + 1] = {0};
 	time_t posix_time;
-	char buf[STR_MAX_LEN + 1] = {0};
 	struct tm *time_fields;
 
 	posix_time = time(NULL);
-	time_fields = localtime(&posix_time);
+    time_fields = localtime(&posix_time);
 
 	strftime(buf, sizeof(buf), "date: %d.%m.%Y, time (UTC): %H:%M:%S", time_fields);
 	printf("Port %u, %s\n", port, buf);
