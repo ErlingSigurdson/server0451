@@ -37,7 +37,7 @@
 
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/
 
-uint32_t msg_format_regex_check(char *buf, const char *pattern);
+uint32_t msg_format_check_regex(char *buf, const char *pattern);
 
 
 #endif  // Защита от повторного включения заголовочного файла.

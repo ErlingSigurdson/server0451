@@ -22,12 +22,12 @@
 #include <regex.h>
 
 // Локальные модули.
-#include "msg_format_regex_check.h"
+#include "msg_format_check_regex.h"
 
 
 /******************** ФУНКЦИИ *******************/
 
-uint32_t msg_format_regex_check(char *buf, const char *regex_pattern)
+uint32_t msg_format_check_regex(char *buf, const char *regex_pattern)
 {
     regex_t regex_ptr;
 
@@ -43,10 +43,16 @@ uint32_t msg_format_regex_check(char *buf, const char *regex_pattern)
     }
 
     uint32_t msg_len = strlen(buf);
+
+    printf("DEBUG. Full string: %s\n", buf);
+    printf("len: %u\n", msg_len);
      
     uint32_t offset_end = pmatch[0].rm_eo;
-    buf[offset_end] = 0;  // Обрезание остатка строки.
+    buf[offset_end] = 0;  // Обрезаем остаток строки.
     uint32_t match_len = strlen(buf);
+
+    printf("DEBUG. Match: %s\n", buf);
+    printf("len: %u\n", match_len);
 
     if (msg_len == match_len) {
     	return MSG_FORMAT_MATCH;

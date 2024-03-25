@@ -23,87 +23,121 @@
 // Локальные модули.
 #include "utilities.h"
 #include "cmd.h"
+#include "msg_format_check_regex.h"
+#include "sockets.h"
 
 
 /******************** ФУНКЦИИ *******************/
 
-void cmd_config_file_read_else_write_defaults(char cmd_config_file_contents[CMD_CONFIG_FILE_LIST_LEN][STR_MAX_LEN],
-                                              char *cmd_config_file_path)
+void cmd_extract(char *buf, char *buf_topic, char *buf_cmd, char delim)
 {
-    FILE *f = fopen(cmd_config_file_path, "r");
-    
-    if (f == NULL) {
-        f = fopen(cmd_config_file_path, "w");
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_1, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_CURRENT_CMD, f);
-        
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_2, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_ASCII_CMD_ON, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_3, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_URI_CMD_ON, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_4, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_VAL_CMD_ON, f);
-        
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_5, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_ASCII_CMD_OFF, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_6, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_URI_CMD_OFF, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_7, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_VAL_CMD_OFF, f);
-        
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_8, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_ASCII_CMD_TOGGLE, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_9, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_URI_CMD_TOGGLE, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_10, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_VAL_CMD_TOGGLE, f);
-        
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_11, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_REQUEST_CMD, f);
-
-        freopen(NULL, "r", f);
-    }
-
-    char buf[STR_MAX_LEN + 1] = {0};
-    uint32_t i = 0;
-    bool end_reached = 0;
-    while (i < CMD_CONFIG_FILE_LIST_LEN && end_reached == (bool)NULL) {
-        end_reached = !(bool)fgets(buf, sizeof(buf), f);
-
-        if (strstr(buf, "CMD") && strchr(buf, '=')) {
-            strcpy(cmd_config_file_contents[i], buf);
-            ++i;
+    char *cmd_ptr = NULL;
+    for (uint32_t i = 0; i < strlen(buf); ++i) {
+        if (buf[i] == delim) {
+            buf[i] = '\0';
+            cmd_ptr = &buf[i + 1];
+            break;
         }
-
-        memset(buf, '\0', sizeof(buf));
-    }
-    
-    if (i != CMD_CONFIG_FILE_LIST_LEN) {
-        printf("Error reading command configuration file contents.\n");
-        printf("For a reference insert \"/config_server0451\" as an -f option argument\n");
-        printf("and follow new file's format and pattern.");
-        exit(0);
     }
 
-    for (uint32_t i = 0; i < CMD_CONFIG_FILE_LIST_LEN; ++i) {
-        strcpy(cmd_config_file_contents[i], strchr(cmd_config_file_contents[i], '=') + 1);
-        utilities_nullify_all_trailing_CR_and_LF_in_string(cmd_config_file_contents[i]);
-    }
+    strcpy(buf_topic, buf);
+    strcpy(buf_cmd, cmd_ptr);
 }
 
-void cmd_config_file_update_current_load_status_cmd(char *cmd_config_file_path, bool load_status_cmd_to_post)
+void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
 {
-	FILE *f = fopen(cmd_config_file_path, "r+");
-	char c = 0;
-	while (c != '=' && c != EOF) {
-		c = fgetc(f); 
-	}
+    /*--- Проверка формата сообщения от клиента ---*/
 
-	if (load_status_cmd_to_post) {
-		fputc('1', f);
-	} else {
-		fputc('0', f);
-	}
+    utilities_nullify_all_CR_and_LF_in_char_array(buf, (STR_MAX_LEN + 1));
+    
+    uint32_t msg_format_check_result = msg_format_check_regex(buf, MSG_FORMAT_REGEX_PATTERN);
+    switch (msg_format_check_result) {
+        case 0:
+            // Message format check success.
+            break;
+        case 1:
+            printf("Message format check failed: partial match.");
+            strcpy(buf, "Message format check failed: partial match.");
+            sockets_write_message(connfd, buf, verbosity_level);
+            exit(1);
+        case 2:
+            printf("Message format check failed: no match found.");
+            strcpy(buf, "Message format check failed: no match found.");
+            sockets_write_message(connfd, buf, verbosity_level);
+            exit(1);
+        case 3:
+            printf("Message format check failed: error compiling regex.");
+            strcpy(buf, "Message format check failed: error compiling regex.");
+            sockets_write_message(connfd, buf, verbosity_level);
+            exit(1);
+        default:
+            // Do nothing and hail MISRA.
+            break;
+        }
 
-	fclose(f);
+    char buf_topic[STR_MAX_LEN + 1] = {0};
+    char buf_cmd[STR_MAX_LEN + 1] = {0};
+    cmd_extract(buf, buf_topic, buf_cmd, DELIM);
+
+    printf("DEBUG. buf_topic:%s\n", buf_topic);
+    printf("DEBUG. buf_cmd:%s\n", buf_cmd);
+
+    bool current_cmd_on =            !strcmp(buf_cmd, CMD_LOAD_ON);
+    bool current_cmd_off =           !strcmp(buf_cmd, CMD_LOAD_OFF);
+    bool current_cmd_toggle =        !strcmp(buf_cmd, CMD_LOAD_TOGGLE);
+    bool current_cmd_request_topic = !strcmp(buf_cmd, CMD_REQUEST_TOPIC);
+    
+    if (current_cmd_toggle) {
+        utilities_read_from_file_single_line(buf_cmd, sizeof(buf_cmd), buf_topic);
+    
+        if (!strcmp(buf_cmd, CMD_LOAD_ON)) {
+            current_cmd_off = 1;
+        } else if (!strcmp(buf_cmd, CMD_LOAD_OFF)) {
+            current_cmd_on = 1;
+        } else {
+            printf("Error: couldn't toggle current load state (invalid data in the topic).");
+            strcpy(buf, "Error: couldn't toggle current load state (invalid data in the topic).");
+            sockets_write_message(connfd, buf, verbosity_level);
+            exit(1);
+        }
+    }
+    
+    if (current_cmd_on) {
+        utilities_write_to_file_single_line(buf_cmd, buf_topic);
+        strcpy(buf, "New command posted: " CMD_LOAD_ON);
+         
+        printf("%s\n", buf);
+        sockets_write_message(connfd, buf, verbosity_level);
+        return;
+    }
+        
+    if (current_cmd_off) {
+        utilities_write_to_file_single_line(buf_cmd, buf_topic);
+        strcpy(buf, "New command posted: " CMD_LOAD_OFF);
+         
+        printf("%s\n", buf);
+        sockets_write_message(connfd, buf, verbosity_level);
+        return;
+    }
+    
+    if (current_cmd_request_topic) {
+        strcpy(buf, buf_cmd);
+        strcat(buf, "\n");  // Позволяет клиенту быстрее считать ответ, реагируя на символ конца строки.
+
+        printf("Current   contents requested:");
+        printf("Current topic contents sent to the client: %s", buf);
+        sockets_write_message(connfd, buf, verbosity_level);
+        return;
+    }
+        
+    /* Программа доходит до этой точки только в случае, если в сообщении
+     * от клиента не было найдено ни одной валидной команды.
+     */
+    if (verbosity_level > 0) {
+        printf("No valid command received.\n");
+        printf("Communication closed.\n");
+    }
+    
+    strcpy(buf, "No valid command received\n");
+    sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
 }
