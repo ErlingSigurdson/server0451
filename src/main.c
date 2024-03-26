@@ -17,7 +17,6 @@
 // Из стандартной библиотеки языка Си.
 #include <stdio.h>
 #include <inttypes.h>
-#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 
@@ -42,13 +41,15 @@
 void opt_handle(int32_t argc, char *argv[], int32_t *port, uint32_t *verbosity_level);
 
 // Вывод в консоль текущей даты и времени (UTC+0) в человекочитаемом формате.
-void timestamp_print(uint32_t port);
+void timestamp_print();
 
 
 /******************** ФУНКЦИИ *******************/
 
 int32_t main(int32_t argc, char *argv[])
 {
+    printf("DEBUG. Format regex pattern: %s\n\n", MSG_FORMAT_REGEX_PATTERN);
+
     /*--- Чтение и обработка опций командной строки и их аргументов ---*/
 
     // Переменные для хранения значений, переданных из командной строки.
@@ -66,9 +67,10 @@ int32_t main(int32_t argc, char *argv[])
 
     if (verbosity_level > 0) {
         printf("\n\n* * * * * * * * * * * * * * * * * * * * * * * *\n");
-        printf("               Starting TCP IoT server");
+        printf("                Starting TCP IoT server\n");
+        printf("Port %u, ", port);
         timestamp_print(port);
-        printf("* * * * * * * * * * * * * * * * * * * * * * * *\n");
+        printf("\n* * * * * * * * * * * * * * * * * * * * * * * *\n");
     }
 
 
@@ -77,16 +79,17 @@ int32_t main(int32_t argc, char *argv[])
     int32_t sockfd = 0;
     uint32_t init_result = sockets_init(&sockfd, port, verbosity_level);
     switch (init_result) {
-        case SOCKETS_ERR_CREATE:
+        case SOCKET_ERR_CREATE:
             fprintf(stderr, "\nError: socket creation at port %d failed.\n", port);
             fprintf(stderr, "Error description: %s\n", strerror(errno));
             exit(1);
-            break;
-        case SOCKETS_ERR_BIND:
+            break;    // Не особо нужно после вызова exit(), но здесь и далее присутствует для единообразия.
+        case SOCKET_ERR_BIND:
             fprintf(stderr, "\nError: socket binding at port %d failed.\n", port);
             fprintf(stderr, "Error description: %s\n", strerror(errno));
             exit(1);
-        case 0:
+            break;
+        case SOCKET_OK:
             // Успешная инициализация сокета.
             break;
         default:
@@ -94,18 +97,20 @@ int32_t main(int32_t argc, char *argv[])
             break;
     }
 
-	int32_t connfd = 0;
-	uint32_t set_connection_result = sockets_set_connection(sockfd, &connfd, port, verbosity_level);
+    int32_t connfd = 0;
+    uint32_t set_connection_result = sockets_set_connection(sockfd, &connfd, port, verbosity_level);
     switch (set_connection_result) {
-        case SOCKETS_ERR_LISTEN:
+        case SOCKET_ERR_LISTEN:
             fprintf(stderr, "\nError: entering a listen mode at port %d failed.\n", port);
             fprintf(stderr, "Error description: %s\n", strerror(errno));
             exit(1);
-        case SOCKETS_ERR_ACCEPT:
+            break;
+        case SOCKET_ERR_ACCEPT:
             fprintf(stderr, "\nError: server failed to accept a client at port %d.\n", port);
             fprintf(stderr, "Error description: %s\n", strerror(errno));
             exit(1);
-        case 0:
+            break;
+        case SOCKET_OK:
             // Установка связи с клиентом прошла успешно.
             break;
         default:
@@ -122,22 +127,25 @@ int32_t main(int32_t argc, char *argv[])
     
     uint32_t msg_format_check_result = msg_format_check_regex(buf, MSG_FORMAT_REGEX_PATTERN);
     switch (msg_format_check_result) {
-        case 3:
+        case MSG_FORMAT_REGEX_COMP_FAIL:
             printf("Message format check failed: error compiling regex.");
             strcpy(buf, "Message format check failed: error compiling regex.");
             sockets_write_message(connfd, buf, verbosity_level);
             exit(1);
-        case 2:
+            break;
+        case MSG_FORMAT_NO_MATCH:
             printf("Message format check failed: no match found.");
             strcpy(buf, "Message format check failed: no match found.");
             sockets_write_message(connfd, buf, verbosity_level);
             exit(1);
-        case 1:
+            break;
+        case MSG_FORMAT_PARTIAL_MATCH:
             printf("Message format check failed: partial match.");
             strcpy(buf, "Message format check failed: partial match.");
             sockets_write_message(connfd, buf, verbosity_level);
             exit(1);
-        case 0:
+            break;
+        case MSG_FORMAT_MATCH:
             // Проверка формата сообщения пройдена.
             break;
         default:
@@ -153,11 +161,11 @@ int32_t main(int32_t argc, char *argv[])
 
     /*--- Завершение коммуникации с клиентом ---*/
 
-	sockets_close(sockfd);
+    sockets_close(sockfd);
     if (verbosity_level > 0) {
         printf("Communication closed.\n");
     }
-	
+    
     return 0;
 }
 
@@ -166,7 +174,7 @@ void opt_handle(int32_t argc, char *argv[], int32_t *port, uint32_t *verbosity_l
     int32_t opt = 0;
     while ((opt = getopt(argc, argv, "p:vVh")) >= 0) {
         switch (opt) {
-            // Обязательная опция.
+            // Обязательная опция, принимает номер порта в качестве аргумента.
             case 'p':
                 *port = strtol(optarg, NULL, 10);
                 break;
@@ -185,22 +193,22 @@ void opt_handle(int32_t argc, char *argv[], int32_t *port, uint32_t *verbosity_l
                 break;
 
             default:
-            	// Ничего не делаем, отдаём дань MISRA.
-            	break;
+                // Ничего не делаем, отдаём дань MISRA.
+                break;
         }
     }
 }
 
-// Вывести в консоль текущее время (UTC+0) в человекочитаемом формате.
-void print_timestamp(uint32_t port)
+// Вывод в консоль текущей даты и времени (UTC+0) в человекочитаемом формате.
+void timestamp_print()
 {
     char buf[STR_MAX_LEN + 1] = {0};
-	time_t posix_time;
-	struct tm *time_fields;
+    time_t posix_time;
+    struct tm *time_fields;
 
-	posix_time = time(NULL);
+    posix_time = time(NULL);
     time_fields = localtime(&posix_time);
 
-	strftime(buf, sizeof(buf), "date: %d.%m.%Y, time (UTC): %H:%M:%S", time_fields);
-	printf("Port %u, %s\n", port, buf);
+    strftime(buf, sizeof(buf), "date: %d.%m.%Y, time (UTC+0): %H:%M:%S", time_fields);
+    printf("%s", buf);
 }

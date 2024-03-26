@@ -21,7 +21,10 @@
 // Из стандартной библиотеки языка Си.
 #include <stdio.h>
 #include <inttypes.h>
-#include <stdbool.h>
+//#include <stdbool.h>
+//#include <string.h>
+//#include <stdlib.h>
+//#include <errno.h>
 
 // Настройки проекта.
 #include "config_general.h"

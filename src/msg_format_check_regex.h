@@ -1,7 +1,7 @@
 /******************* ОПИСАНИЕ *******************/
 
 /**
- * Имя файла: msg_format_regex_check.h
+ * Имя файла: msg_format_check_regex.h
  * ----------------------------------------------------------------------------|---------------------------------------|
  * Назначение: проверка формата сообщения с помощью регулярных выражений.
  * ----------------------------------------------------------------------------|---------------------------------------|
@@ -12,8 +12,8 @@
 /************ ДИРЕКТИВЫ ПРЕПРОЦЕССОРА ***********/
 
 // Защита от повторного включения заголовочного файла.
-#ifndef MSG_FORMAT_REGEXP_CHECK_H
-#define MSG_FORMAT_REGEXP_CHECK_H
+#ifndef MSG_FORMAT_CHECK_REGEX_H
+#define MSG_FORMAT_CHECK_REGEX_H
 
 
 /*--- Включения ---*/
@@ -29,10 +29,11 @@
 
 /*--- Прочее ---*/
 
-#define MSG_FORMAT_MATCH 0
-#define MSG_FORMAT_PARTIAL_MATCH 1
-#define MSG_FORMAT_NO_MATCH 2
+// Коды результата.
 #define MSG_FORMAT_REGEX_COMP_FAIL 3
+#define MSG_FORMAT_NO_MATCH 2
+#define MSG_FORMAT_PARTIAL_MATCH 1
+#define MSG_FORMAT_MATCH 0
 
 
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/

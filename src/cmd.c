@@ -19,6 +19,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
+//#include <errno.h>
 
 // Локальные модули.
 #include "utilities.h"
@@ -50,6 +51,7 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
     char buf_topic[STR_MAX_LEN + 1] = {0};
     char buf_cmd[STR_MAX_LEN + 1] = {0};
     cmd_extract(buf, buf_topic, buf_cmd, DELIM_CHAR);
+    utilities_to_lowercase_string(buf_topic);
 
 
     /*--- Определение пути к файлу топика ---*/
@@ -63,55 +65,52 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
 
     /*--- Выполнение команды ---*/
 
-    bool current_cmd_on =            !strcmp(buf_cmd, CMD_LOAD_ON);
-    bool current_cmd_off =           !strcmp(buf_cmd, CMD_LOAD_OFF);
-    bool current_cmd_toggle =        !strcmp(buf_cmd, CMD_LOAD_TOGGLE);
-    bool current_cmd_request_topic = !strcmp(buf_cmd, CMD_TOPIC_REQUEST);
+    bool current_cmd_load_on =        !strcmp(buf_cmd, CMD_LOAD_ON);
+    bool current_cmd_load_off =       !strcmp(buf_cmd, CMD_LOAD_OFF);
+    bool current_cmd_load_toggle =    !strcmp(buf_cmd, CMD_LOAD_TOGGLE);
+    bool current_cmd_topic_request =  !strcmp(buf_cmd, CMD_TOPIC_REQUEST);
     
-    if (current_cmd_toggle) {
+    if (current_cmd_load_toggle) {
         utilities_read_from_file_single_line(buf_cmd, sizeof(buf_cmd), topic_file_path);
     
         if (!strcmp(buf_cmd, CMD_LOAD_ON)) {
-            current_cmd_off = 1;
+            current_cmd_load_off = 1;
         } else if (!strcmp(buf_cmd, CMD_LOAD_OFF)) {
-            current_cmd_on = 1;
+            current_cmd_load_on = 1;
         } else {
-            printf("DEBUG. Posted cmd: %s\n", buf_cmd);
-            printf("DEBUG. Posted cmd len: %lu\n", strlen(buf_cmd));
-            printf("DEBUG. Hardcoded cmd len: %lu\n", strlen(CMD_LOAD_ON));
-            
-            printf("Error: couldn't toggle current load state (invalid data in the topic).");
-            strcpy(buf, "Error: couldn't toggle current load state (invalid data in the topic).");
+            printf("Error: couldn't toggle current load state (invalid data in the topic).\n");
+            strcpy(buf, "Error: couldn't toggle current load state (invalid data in the topic).\n");
             sockets_write_message(connfd, buf, verbosity_level);
+            
             return;
         }
     }
     
-    if (current_cmd_on) {
+    if (current_cmd_load_on) {
         utilities_write_to_file_single_line(CMD_LOAD_ON, topic_file_path);
-        strcpy(buf, "New command posted: " CMD_LOAD_ON);
-         
-        printf("%s\n", buf);
+        strcpy(buf, "New command posted: " CMD_LOAD_ON "\n");
+        printf("New command posted: %s", buf);
         sockets_write_message(connfd, buf, verbosity_level);
+        
         return;
     }
         
-    if (current_cmd_off) {
+    if (current_cmd_load_off) {
         utilities_write_to_file_single_line(CMD_LOAD_OFF, topic_file_path);
-        strcpy(buf, "New command posted: " CMD_LOAD_OFF);
-         
-        printf("%s\n", buf);
+        strcpy(buf, "New command posted: " CMD_LOAD_OFF "\n");
+        printf("New command posted: %s", buf);
         sockets_write_message(connfd, buf, verbosity_level);
+        
         return;
     }
     
-    if (current_cmd_request_topic) {
-        strcpy(buf, buf_cmd);
-        strcat(buf, "\n");  // Позволяет клиенту быстрее считать ответ, реагируя на символ конца строки.
-
-        printf("Current   contents requested:");
-        printf("Current topic contents sent to the client: %s", buf);
-        sockets_write_message(connfd, buf, verbosity_level);
+    if (current_cmd_topic_request) {
+        utilities_read_from_file_single_line(buf_cmd, sizeof(buf_cmd), topic_file_path);
+        strcat(buf_cmd, "\n");  // Позволяет клиенту быстрее считать ответ, реагируя на символ конца строки.
+        printf("Current topic contents requested.\n");
+        printf("Current topic contents sent to the client:\n%s", buf_cmd);
+        sockets_write_message(connfd, buf_cmd, verbosity_level);
+        
         return;
     }
         
@@ -120,7 +119,6 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
      */
     if (verbosity_level > 0) {
         printf("No valid command received.\n");
-        printf("Communication closed.\n");
     }
     
     strcpy(buf, "No valid command received\n");

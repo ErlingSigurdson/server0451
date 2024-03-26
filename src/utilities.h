@@ -22,6 +22,9 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <stdbool.h>
+//#include <string.h>
+//#include <stdlib.h>
+//#include <errno.h>
 
 
 /*--- Прочее ---*/
@@ -42,6 +45,7 @@ bool utilities_substitute_all_CR_and_LF_in_char_array(char *buf, size_t buf_size
 bool utilities_append_LF_to_string(char *buf, size_t buf_size);
 bool utilities_append_LF_if_absent_to_string(char *buf, size_t buf_size);
 bool utilities_append_CR_to_string(char *buf, size_t buf_size);
+void utilities_to_lowercase_string(char *buf);
 
 
 /*--- Работа с файлами ---*/

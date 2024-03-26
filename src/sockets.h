@@ -21,9 +21,9 @@
 // Из стандартной библиотеки языка Си.
 #include <stdio.h>
 #include <inttypes.h>
-#include <stdbool.h>
+//#include <stdbool.h>
 #include <string.h>
-#include <stdlib.h>
+//#include <stdlib.h>
 #include <errno.h>
 
 // Из библиотек POSIX.
@@ -40,11 +40,19 @@
 
 /*--- Прочее ---*/
 
-// Коды ошибок.
-#define SOCKETS_ERR_CREATE 2
-#define SOCKETS_ERR_BIND   1
-#define SOCKETS_ERR_LISTEN 2
-#define SOCKETS_ERR_ACCEPT 1
+// Коды результата sockets_init().
+#define SOCKET_ERR_CREATE 2
+#define SOCKET_ERR_BIND   1
+
+// Коды результата sockets_set_connection().
+#define SOCKET_ERR_LISTEN 2
+#define SOCKET_ERR_ACCEPT 1
+
+// Код успешной отработки функции.
+#define SOCKET_OK         0
+
+// Для listen().
+#define SOCKET_BACKLOG    5
 
 
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/

@@ -1,7 +1,7 @@
 /******************* ОПИСАНИЕ *******************/
 
 /**
- * Имя файла: msg_format_regex_check.c
+ * Имя файла: msg_format_check_regex.c
  * ----------------------------------------------------------------------------|---------------------------------------|
  * Назначение: проверка формата сообщения с помощью регулярных выражений.
  * ----------------------------------------------------------------------------|---------------------------------------|
@@ -49,8 +49,8 @@ uint32_t msg_format_check_regex(char *buf, const char *regex_pattern)
     uint32_t match_len = strlen(buf);
 
     if (msg_len == match_len) {
-    	return MSG_FORMAT_MATCH;
+        return MSG_FORMAT_MATCH;
     } else {
-    	return MSG_FORMAT_PARTIAL_MATCH;
+        return MSG_FORMAT_PARTIAL_MATCH;
     }
 }

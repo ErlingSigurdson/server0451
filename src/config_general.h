@@ -16,6 +16,12 @@
 #define CONFIG_GENERAL_H
 
 
+/*--- Включения ---*/
+
+// Локальные модули.
+#include "utilities.h"
+
+
 /*--- Прочее ---*/
 
 // Предельная длина строки.
@@ -24,7 +30,8 @@
 // Формат, которому должны следовать сообщения от клиентов.
 #define DELIM_STRING ":"
 #define DELIM_CHAR   ':'
-#define MSG_FORMAT_REGEX_PATTERN "[tT][oO][pP][iI][cC]_([1-9][0-9]{0,1}|100)" "DELIM_STRING" "[aA][tT]\\+[a-zA-Z]+=*[a-zA-Z]*"
+#define DELIM_RAW     :
+#define MSG_FORMAT_REGEX_PATTERN "[tT][oO][pP][iI][cC]_([1-9][0-9]{0,1}|100)" STRINGIFY(DELIM_RAW) "[aA][tT]\\+[a-zA-Z]+=*[a-zA-Z]*"
 
 // Команды.
 #define CMD_LOAD_ON        "AT+SETLOAD=ON"
