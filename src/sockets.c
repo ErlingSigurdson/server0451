@@ -116,16 +116,19 @@ void sockets_read_message(int32_t connfd, char *buf, size_t buf_size, uint32_t v
     // Выводим содержимое буфера.
     if (verbosity_level > 0) {
         utilities_nullify_all_trailing_CR_and_LF_in_string(buf);
-        printf("Message received from the client:\n%s\n\n", buf);
+        printf("\nMessage received from the client:\n%s\n", buf);
     }
 }
 
 void sockets_write_message(int32_t connfd, char *buf, uint32_t verbosity_level)
 {  
+    utilities_nullify_all_trailing_CR_and_LF_in_string(buf);
+    strcat(buf, "\n");
+    
     write(connfd, buf, strlen(buf));
 
     if (verbosity_level > 0) {
-        printf("Message sent to the client:\n%s", buf);    
+        printf("\nMessage sent to the client:\n%s", buf);    
     }
 }
 

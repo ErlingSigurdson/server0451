@@ -74,31 +74,28 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
         utilities_read_from_file_single_line(buf_cmd, sizeof(buf_cmd), topic_file_path);
     
         if (!strcmp(buf_cmd, CMD_LOAD_ON)) {
+            strcpy(buf_cmd, CMD_LOAD_OFF);
             current_cmd_load_off = 1;
         } else if (!strcmp(buf_cmd, CMD_LOAD_OFF)) {
+            strcpy(buf_cmd, CMD_LOAD_ON);
             current_cmd_load_on = 1;
         } else {
-            printf("Error: couldn't toggle current load state (invalid data in the topic).\n");
-            strcpy(buf, "Error: couldn't toggle current load state (invalid data in the topic).\n");
-            sockets_write_message(connfd, buf, verbosity_level);
+            printf("\nError: couldn't toggle current load state (invalid data in the topic).\n");
+            strcpy(buf, "Error: couldn't toggle current load state (invalid data in the topic).");
+            sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
             
             return;
         }
     }
     
-    if (current_cmd_load_on) {
-        utilities_write_to_file_single_line(CMD_LOAD_ON, topic_file_path);
-        strcpy(buf, "New command posted: " CMD_LOAD_ON "\n");
-        printf("New command posted: %s", buf);
-        sockets_write_message(connfd, buf, verbosity_level);
-        
-        return;
-    }
-        
-    if (current_cmd_load_off) {
-        utilities_write_to_file_single_line(CMD_LOAD_OFF, topic_file_path);
-        strcpy(buf, "New command posted: " CMD_LOAD_OFF "\n");
-        printf("New command posted: %s", buf);
+    if (current_cmd_load_on || current_cmd_load_off) {
+        utilities_write_to_file_single_line(buf_cmd, topic_file_path);
+
+        printf("\nNew command posted:\n");
+        printf("%s\n", buf_cmd);
+
+        strcpy(buf, "New command posted: ");
+        strcat(buf, buf_cmd);
         sockets_write_message(connfd, buf, verbosity_level);
         
         return;
@@ -106,9 +103,8 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
     
     if (current_cmd_topic_request) {
         utilities_read_from_file_single_line(buf_cmd, sizeof(buf_cmd), topic_file_path);
-        strcat(buf_cmd, "\n");  // Позволяет клиенту быстрее считать ответ, реагируя на символ конца строки.
-        printf("Current topic contents requested.\n");
-        printf("Current topic contents sent to the client:\n%s", buf_cmd);
+        printf("\nCurrent topic contents requested.\n");
+        printf("Current topic contents sent to the client: %s\n", buf_cmd);
         sockets_write_message(connfd, buf_cmd, verbosity_level);
         
         return;
@@ -121,6 +117,6 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
         printf("No valid command received.\n");
     }
     
-    strcpy(buf, "No valid command received\n");
+    strcpy(buf, "\nNo valid command received\n");
     sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
 }

@@ -48,8 +48,6 @@ void timestamp_print();
 
 int32_t main(int32_t argc, char *argv[])
 {
-    printf("DEBUG. Format regex pattern: %s\n\n", MSG_FORMAT_REGEX_PATTERN);
-
     /*--- Чтение и обработка опций командной строки и их аргументов ---*/
 
     // Переменные для хранения значений, переданных из командной строки.
@@ -66,11 +64,11 @@ int32_t main(int32_t argc, char *argv[])
     }
 
     if (verbosity_level > 0) {
-        printf("\n\n* * * * * * * * * * * * * * * * * * * * * * * *\n");
-        printf("                Starting TCP IoT server\n");
+        printf("\n\n* * * * * * * * * * * * * * * * * * * * * * * * *\n");
+        printf("             Starting TCP IoT server\n");
         printf("Port %u, ", port);
         timestamp_print(port);
-        printf("\n* * * * * * * * * * * * * * * * * * * * * * * *\n");
+        printf("\n* * * * * * * * * * * * * * * * * * * * * * * * *\n");
     }
 
 
@@ -128,21 +126,24 @@ int32_t main(int32_t argc, char *argv[])
     uint32_t msg_format_check_result = msg_format_check_regex(buf, MSG_FORMAT_REGEX_PATTERN);
     switch (msg_format_check_result) {
         case MSG_FORMAT_REGEX_COMP_FAIL:
-            printf("Message format check failed: error compiling regex.");
+            printf("\nMessage format check failed: error compiling regex.\n");
             strcpy(buf, "Message format check failed: error compiling regex.");
-            sockets_write_message(connfd, buf, verbosity_level);
+            sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
+            goto close_communictation;
             exit(1);
             break;
         case MSG_FORMAT_NO_MATCH:
-            printf("Message format check failed: no match found.");
+            printf("\nMessage format check failed: no match found.\n");
             strcpy(buf, "Message format check failed: no match found.");
-            sockets_write_message(connfd, buf, verbosity_level);
+            sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
+            goto close_communictation;
             exit(1);
             break;
         case MSG_FORMAT_PARTIAL_MATCH:
-            printf("Message format check failed: partial match.");
+            printf("\nMessage format check failed: partial match.\n");
             strcpy(buf, "Message format check failed: partial match.");
-            sockets_write_message(connfd, buf, verbosity_level);
+            sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
+            goto close_communictation;
             exit(1);
             break;
         case MSG_FORMAT_MATCH:
@@ -161,9 +162,10 @@ int32_t main(int32_t argc, char *argv[])
 
     /*--- Завершение коммуникации с клиентом ---*/
 
+    close_communictation:
     sockets_close(sockfd);
     if (verbosity_level > 0) {
-        printf("Communication closed.\n");
+        printf("\nCommunication closed.\n");
     }
     
     return 0;
