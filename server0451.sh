@@ -22,11 +22,12 @@ fi
 read -p "Do you want to run server0451 in a (l)oop or a (o)neshot mode?" MODE
 
 if [ "$MODE" = "l" ] || [ "$MODE" = "L" ]; then
-    nohup $LOOP_SCRIPT_FILE_PATH >> $LOG_FILE_PATH 2>&1 &
     echo "server0451 started in a loop mode at ports $PORT_1 and $PORT_2."
+    nohup $LOOP_SCRIPT_FILE_PATH >> $LOG_FILE_PATH 2>&1 &
+    
 elif [ "$MODE" = "o" ] || [ "$MODE" = "O" ]; then
-    nohup $ONESHOT_SCRIPT_FILE_PATH >> $LOG_FILE_PATH 2>&1 &
     echo "server0451 started in a oneshot mode at ports $PORT_1 and $PORT_2."
+    $ONESHOT_SCRIPT_FILE_PATH
 else
     echo "Try again and insert [l/L] for loop mode or [o/O] for oneshot mode".
 fi
