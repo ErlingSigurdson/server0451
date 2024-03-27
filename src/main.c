@@ -44,6 +44,9 @@ void opt_handle(int32_t argc, char *argv[], int32_t *port, uint32_t *verbosity_l
 // Вывод в консоль текущей даты и времени (UTC+0) в человекочитаемом формате.
 void timestamp_print();
 
+// Завершение связи с клиентом.
+void finish_communication(int32_t sockfd, uint32_t verbosity_level);
+
 
 /******************** ФУНКЦИИ *******************/
 
@@ -130,21 +133,21 @@ int32_t main(int32_t argc, char *argv[])
             printf("\nMessage format check failed: error compiling regex.\n");
             strcpy(buf, "Message format check failed: error compiling regex.");
             sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
-            goto close_communictation;
+            finish_communication(sockfd, verbosity_level);
             exit(1);
             break;
         case MSG_FORMAT_NO_MATCH:
             printf("\nMessage format check failed: no match found.\n");
             strcpy(buf, "Message format check failed: no match found.");
             sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
-            goto close_communictation;
+            finish_communication(sockfd, verbosity_level);
             exit(1);
             break;
         case MSG_FORMAT_PARTIAL_MATCH:
             printf("\nMessage format check failed: partial match.\n");
             strcpy(buf, "Message format check failed: partial match.");
             sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
-            goto close_communictation;
+            finish_communication(sockfd, verbosity_level);
             exit(1);
             break;
         case MSG_FORMAT_MATCH:
@@ -163,15 +166,12 @@ int32_t main(int32_t argc, char *argv[])
 
     /*--- Завершение коммуникации с клиентом ---*/
 
-    close_communictation:
-    sockets_close(sockfd);
-    if (verbosity_level > 0) {
-        printf("\nCommunication closed.\n");
-    }
+    finish_communication(sockfd, verbosity_level);
     
     return 0;
 }
 
+// Чтение опций командной строки и их аргументов.
 void opt_handle(int32_t argc, char *argv[], int32_t *port, uint32_t *verbosity_level)
 {
     int32_t opt = 0;
@@ -214,4 +214,13 @@ void timestamp_print()
 
     strftime(buf, sizeof(buf), "date: %d.%m.%Y, time (UTC+0): %H:%M:%S", time_fields);
     printf("%s", buf);
+}
+
+// Завершение связи с клиентом.
+void finish_communication(int32_t sockfd, uint32_t verbosity_level)
+{
+    sockets_close(sockfd);
+    if (verbosity_level > 0) {
+        printf("\nCommunication closed.\n");
+    }
 }
