@@ -32,6 +32,9 @@
 //#include <sys/socket.h>
 //#include <sys/types.h>
 
+// Настройки проекта.
+#include "config_general.h"
+
 // Локальные модули.
 #include "utilities.h"
 #include "sockets.h"
@@ -53,6 +56,11 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
 
     /*--- Установка опций сокетов (опционально) ---*/
 
+    /* Условной компиляцией можно управлять с помощью соответствующих директив,
+     * приведённых в файле config_general.h.
+     */   
+
+    #ifdef SOCKOPT_SO_REUSEADDR
     /* Разрешение заново использовать IP-адрес
      * немедленно после закрытия предыдущего соединения.
      * Если это делается, то обязательно до вызова bind().
@@ -68,7 +76,9 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
         printf("...setting SO_REUSEADDR socket option, returned value: %d. ", socket_option_a);
         printf("Status or error description: %s\n", strerror(errno));
     }
+    #endif
 
+    #ifdef SOCKOPT_SO_LINGER
     /* Разрешение закрывать сокет, не дожидаясь завершения передачи данных.
      * Если это делается, то обязательно до вызова bind().
      */
@@ -85,6 +95,7 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
         printf("...clearing SO_LINGER socket option, returned value: %d. ", socket_option_b);
         printf("Status or error description: %s\n", strerror(errno));
     }
+    #endif
 
 
     /*--- Привязка вновь созданного сокета к IP-адресу ---*/
