@@ -24,6 +24,9 @@
 // Из библиотек POSIX.
 #include <unistd.h>
 
+// Настройки проекта.
+#include "config_general.h"
+
 // Локальные модули.
 #include "utilities.h"
 #include "cmd.h"
@@ -68,7 +71,8 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
 
     /*--- Выполнение команды ---*/
 
-    if (!strcmp(buf_cmd, CMD_LOAD_TOGGLE)) {
+    bool current_cmd_load_toggle = !strcmp(buf_cmd, CMD_LOAD_TOGGLE);
+    if (current_cmd_load_toggle) {
         utilities_read_from_file_single_line(buf_cmd, sizeof(buf_cmd), topic_file_path);
     
         if (!strcmp(buf_cmd, CMD_LOAD_ON)) {
@@ -76,8 +80,8 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
         } else if (!strcmp(buf_cmd, CMD_LOAD_OFF)) {
             strcpy(buf_cmd, CMD_LOAD_ON);
         } else {
-            printf("\nError: couldn't toggle current load state (invalid data in the topic).\n");
-            strcpy(buf, "Error: couldn't toggle current load state (invalid data in the topic).");
+            printf("\nError: can't toggle current load state (invalid data in the topic).\n");
+            strcpy(buf, "Error: can't toggle current load state (invalid data in the topic).");
             sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
             
             return;
@@ -96,7 +100,7 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
 
         strcpy(buf, "New command posted: ");
         strcat(buf, buf_cmd);
-        sockets_write_message(connfd, buf, verbosity_level);
+        sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
         
         return;
     }
@@ -115,9 +119,9 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
      * от клиента не было найдено ни одной валидной команды.
      */
     if (verbosity_level > 0) {
-        printf("No valid command received.\n");
+        printf("\nNo valid command received.\n");
     }
     
-    strcpy(buf, "\nNo valid command received\n");
+    strcpy(buf, "No valid command received.");
     sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
 }

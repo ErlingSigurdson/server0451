@@ -26,9 +26,6 @@
 //#include <stdlib.h>
 //#include <errno.h>
 
-// Настройки проекта.
-#include "config_general.h"
-
 
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/
 
