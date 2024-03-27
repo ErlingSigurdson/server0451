@@ -25,6 +25,13 @@
 #include <unistd.h>
 #include <netinet/in.h>
 
+/* Эти заголовочные файлы упоминаются в примерах серверов, написанных
+ * на языке Си, но код компилируется и работает и без них. Оставляю на память.
+ */
+//#include <netdb.h>
+//#include <sys/socket.h>
+//#include <sys/types.h>
+
 // Локальные модули.
 #include "utilities.h"
 #include "sockets.h"
@@ -50,16 +57,11 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
      * немедленно после закрытия предыдущего соединения.
      * Если это делается, то обязательно до вызова bind().
      */
-    const int32_t so_reuseaddr = 1;
+    int32_t so_reuseaddr = 1;
     int32_t socket_option_a = setsockopt(*sockfd,
                            SOL_SOCKET,
                            SO_REUSEADDR,
                            &so_reuseaddr,
-                           /* То ли мне кажется, то ли в каких-то случаях
-                            * увеличение этого значения в два раза исправляло
-                            * какие-то проблемы. Бред, наверное, но на всякий
-                            * случай оставляю этот комментарий.
-                            */
                            (socklen_t)sizeof(so_reuseaddr));
 
     if (verbosity_level > 1) {
@@ -70,16 +72,13 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
     /* Разрешение закрывать сокет, не дожидаясь завершения передачи данных.
      * Если это делается, то обязательно до вызова bind().
      */
-    const int32_t so_linger = 0;
+    struct linger so_linger;
+    so_linger.l_onoff = 1;
+    so_linger.l_linger = 0;
     int32_t socket_option_b = setsockopt(*sockfd,
                            SOL_SOCKET,
                            SO_LINGER,
                            &so_linger,
-                           /* То ли мне кажется, то ли в каких-то случаях
-                            * увеличение этого значения в два раза исправляло
-                            * какие-то проблемы. Бред, наверное, но на всякий
-                            * случай оставляю этот комментарий.
-                            */
                            (socklen_t)sizeof(so_linger));
 
     if (verbosity_level > 1) {

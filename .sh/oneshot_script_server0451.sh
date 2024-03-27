@@ -16,12 +16,12 @@ sudo lsof -l -P -n > $TMP_FILE_PATH_1
 PORT_1_BOUND=$(grep -c ":$PORT_1.*LISTEN" $TMP_FILE_PATH_1)
 rm $TMP_FILE_PATH_1
 if [ $PORT_1_BOUND -eq 0 ]; then
-    sudo $EXEC_FILE_PATH -p $PORT_1 -v
+    sudo $EXEC_FILE_PATH -p $PORT_1 -V
 fi
     
 sudo lsof -l -P -n > $TMP_FILE_PATH_2
 PORT_2_BOUND=$(grep -c ":$PORT_2.*LISTEN" $TMP_FILE_PATH_2)
 rm $TMP_FILE_PATH_2
 if [ $PORT_2_BOUND -eq 0 ]; then
-    sudo $EXEC_FILE_PATH -p $PORT_2 -v
+    sudo $EXEC_FILE_PATH -p $PORT_2 -V
 fi

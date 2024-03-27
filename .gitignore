@@ -1,7 +1,6 @@
 *execute_server0451
-*cmd_config_server0451
-*log_server0451
 *tmp_1
 *tmp_2
+*log_server0451
 *nohup.out
-*/topic_*
+*topic_*
