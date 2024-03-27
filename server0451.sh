@@ -15,7 +15,7 @@ ONESHOT_SCRIPT_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/.sh/oneshot_script_server045
 LOG_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/.log/log_server0451"
 
 if [ ! -e "$EXEC_FILE_PATH" ]; then
-    echo "Program executable file is unavailable. Move to /server0451/src directory and run make utility."
+    echo "Binary executable file is unavailable. Go to /server0451/src directory and run make utility."
     exit;
 fi
 
