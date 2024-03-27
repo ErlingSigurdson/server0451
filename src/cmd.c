@@ -18,8 +18,11 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <string.h>
-#include <stdlib.h>
+//#include <stdlib.h>
 //#include <errno.h>
+
+// Из библиотек POSIX.
+#include <unistd.h>
 
 // Локальные модули.
 #include "utilities.h"

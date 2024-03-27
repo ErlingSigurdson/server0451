@@ -17,8 +17,10 @@
 // Из стандартной библиотеки языка Си.
 #include <stdio.h>
 #include <inttypes.h>
+//#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 // Из библиотек POSIX.
 #include <unistd.h>
@@ -64,11 +66,11 @@ int32_t main(int32_t argc, char *argv[])
     }
 
     if (verbosity_level > 0) {
-        printf("\n\n* * * * * * * * * * * * * * * * * * * * * * * * *\n");
-        printf("             Starting TCP IoT server\n");
+        printf("\n\n* * * * * * * * * * * * * * * * * * * * * * * * * *\n");
+        printf("              Starting TCP IoT server\n");
         printf("Port %u, ", port);
         timestamp_print(port);
-        printf("\n* * * * * * * * * * * * * * * * * * * * * * * * *\n");
+        printf("\n* * * * * * * * * * * * * * * * * * * * * * * * * *\n");
     }
 
 
