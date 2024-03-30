@@ -175,7 +175,7 @@ int32_t main(int32_t argc, char *argv[])
 void opt_handle(int32_t argc, char *argv[], int32_t *port, uint32_t *verbosity_level)
 {
     int32_t opt = 0;
-    while ((opt = getopt(argc, argv, "p:vVh")) >= 0) {
+    while ((opt = getopt(argc, argv, "p:k:vVh")) >= 0) {
         switch (opt) {
             // Обязательная опция, принимает номер порта в качестве аргумента.
             case 'p':
