@@ -11,12 +11,12 @@ PORT_2=$(grep -E -o "PORT_2=[0-9]+" "$PORT_CONFIG_FILE_PATH" | grep -E -o "=[0-9
 
 while true
 do
-    sudo $EXEC_FILE_PATH -p $PORT_1 -v
+    sudo $EXEC_FILE_PATH -p $PORT_1 -k $1 -v
 done &
 
 while true
 do
-    sudo $EXEC_FILE_PATH -p $PORT_2 -v
+    sudo $EXEC_FILE_PATH -p $PORT_2 -k $1 -v
 done &
 
 LOG_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/../.log/log_server0451"

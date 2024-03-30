@@ -24,7 +24,7 @@
 // Формат, которому должны следовать сообщения от клиентов.
 #define DELIM_STR  ":"
 #define DELIM_CHAR ':'
-#define MSG_FORMAT_REGEX_PATTERN "[tT][oO][pP][iI][cC]_([1-9][0-9]{0,1}|100)" DELIM_STR "[aA][tT]\\+[a-zA-Z]+=*[a-zA-Z]*"
+#define MSG_FORMAT_REGEX_PATTERN DELIM_STR "[tT][oO][pP][iI][cC]_([1-9][0-9]{0,1}|100)" DELIM_STR "[aA][tT]\\+[a-zA-Z]+=*[a-zA-Z]*"
 
 // Команды.
 #define CMD_LOAD_ON        "AT+SETLOAD=ON"

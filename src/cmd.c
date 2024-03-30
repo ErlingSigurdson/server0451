@@ -37,17 +37,12 @@
 
 void cmd_extract(char *buf, char *buf_topic, char *buf_cmd, char delim)
 {
-    char *cmd_ptr = NULL;
-    for (uint32_t i = 0; i < strlen(buf); ++i) {
-        if (buf[i] == delim) {
-            buf[i] = '\0';
-            cmd_ptr = &buf[i + 1];
-            break;
-        }
-    }
+    char *cmd_ptr = strrchr(buf, delim);
+    *cmd_ptr = '\0';
+    strcpy(buf_cmd, cmd_ptr + 1);
 
-    strcpy(buf_topic, buf);
-    strcpy(buf_cmd, cmd_ptr);
+    char *topic_ptr = strchr(buf, delim);
+    strcpy(buf_topic, topic_ptr + 1);
 }
 
 void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)

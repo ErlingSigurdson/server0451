@@ -39,7 +39,10 @@
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/
 
 // Чтение опций командной строки и их аргументов.
-void opt_handle(int32_t argc, char *argv[], int32_t *port, uint32_t *verbosity_level);
+void opt_handle(int32_t argc, char *argv[],
+                int32_t *port,
+                char *keyword, size_t keyword_buf_size,
+                uint32_t *verbosity_level);
 
 // Вывод в консоль текущей даты и времени (UTC+0) в человекочитаемом формате.
 void timestamp_print();
@@ -56,14 +59,21 @@ int32_t main(int32_t argc, char *argv[])
 
     // Переменные для хранения значений, переданных из командной строки.
     int32_t port = -1;             // По умолчанию задано невалидное значение.
+    char keyword[STR_MAX_LEN + 1 ] = {0};
     uint32_t verbosity_level = 0;
 
     // Чтение опций командной строки и их аргументов.
-    opt_handle(argc, argv, &port, &verbosity_level);
+    opt_handle(argc, argv, &port, keyword, sizeof(keyword), &verbosity_level);
 
     if (port <= 0) {
-        fprintf(stderr, "Error: invalid port\n");
+        fprintf(stderr, "Error: invalid port.\n");
         fprintf(stderr, "Please restart the program and insert a valid port number as a -p option argument.\n");
+        exit(1);
+    }
+
+    if (strlen(keyword) <= 0) {
+        fprintf(stderr, "Error: invalid keyword.\n");
+        fprintf(stderr, "Please restart the program and insert a valid keyword as a -k option argument.\n");
         exit(1);
     }
 
@@ -126,8 +136,12 @@ int32_t main(int32_t argc, char *argv[])
 
 
     /*--- Проверка формата сообщения от клиента ---*/
+
+    char resulting_pattern[STR_MAX_LEN * 2 + 1] = {0};
+    strcpy(resulting_pattern, keyword);
+    strcat(resulting_pattern, MSG_FORMAT_REGEX_PATTERN);
     
-    uint32_t msg_format_check_result = msg_format_check_regex(buf, MSG_FORMAT_REGEX_PATTERN);
+    uint32_t msg_format_check_result = msg_format_check_regex(buf, resulting_pattern);
     switch (msg_format_check_result) {
         case MSG_FORMAT_REGEX_COMP_FAIL:
             printf("\nMessage format check failed: error compiling regex.\n");
@@ -172,7 +186,10 @@ int32_t main(int32_t argc, char *argv[])
 }
 
 // Чтение опций командной строки и их аргументов.
-void opt_handle(int32_t argc, char *argv[], int32_t *port, uint32_t *verbosity_level)
+void opt_handle(int32_t argc, char *argv[],
+                int32_t *port,
+                char *keyword, size_t keyword_buf_size,
+                uint32_t *verbosity_level)
 {
     int32_t opt = 0;
     while ((opt = getopt(argc, argv, "p:k:vVh")) >= 0) {
@@ -180,6 +197,12 @@ void opt_handle(int32_t argc, char *argv[], int32_t *port, uint32_t *verbosity_l
             // Обязательная опция, принимает номер порта в качестве аргумента.
             case 'p':
                 *port = strtol(optarg, NULL, 10);
+                break;
+
+            case 'k':
+                if (strlen(optarg) < keyword_buf_size) {
+                    sscanf(optarg, "%s", keyword);
+                }
                 break;
 
             case 'v':

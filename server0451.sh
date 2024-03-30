@@ -21,13 +21,15 @@ fi
 
 read -p "Do you want to run server0451 in a (l)oop or a (o)neshot mode?" MODE
 
+read -p "Insert a keyword. All messages processed by the server will have to start with it." KEYWORD
+
 if [ "$MODE" = "l" ] || [ "$MODE" = "L" ]; then
     echo "server0451 started in a loop mode at ports $PORT_1 and $PORT_2."
-    nohup $LOOP_SCRIPT_FILE_PATH >> $LOG_FILE_PATH 2>&1 &
+    nohup $LOOP_SCRIPT_FILE_PATH $KEYWORD >> $LOG_FILE_PATH 2>&1 &
     
 elif [ "$MODE" = "o" ] || [ "$MODE" = "O" ]; then
     echo "server0451 started in a oneshot mode at ports $PORT_1 and $PORT_2."
-    $ONESHOT_SCRIPT_FILE_PATH
+    $ONESHOT_SCRIPT_FILE_PATH $KEYWORD
 else
     echo "Try again and insert [l/L] for loop mode or [o/O] for oneshot mode".
 fi
