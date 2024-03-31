@@ -36,8 +36,8 @@
 #include "config_general.h"
 
 // Локальные модули.
-#include "utilities.h"
 #include "sockets.h"
+#include "utilities.h"
 
 
 /******************** ФУНКЦИИ *******************/
@@ -67,10 +67,10 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
      */
     int32_t so_reuseaddr = 1;
     int32_t socket_option_a = setsockopt(*sockfd,
-                           SOL_SOCKET,
-                           SO_REUSEADDR,
-                           &so_reuseaddr,
-                           (socklen_t)sizeof(so_reuseaddr));
+                                          SOL_SOCKET,
+                                          SO_REUSEADDR,
+                                          &so_reuseaddr,
+                                          (socklen_t)sizeof(so_reuseaddr));
 
     if (verbosity_level > 1) {
         printf("...setting SO_REUSEADDR socket option, returned value: %d. ", socket_option_a);
@@ -86,10 +86,10 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
     so_linger.l_onoff = 1;
     so_linger.l_linger = 0;
     int32_t socket_option_b = setsockopt(*sockfd,
-                           SOL_SOCKET,
-                           SO_LINGER,
-                           &so_linger,
-                           (socklen_t)sizeof(so_linger));
+                                         SOL_SOCKET,
+                                         SO_LINGER,
+                                         &so_linger,
+                                         (socklen_t)sizeof(so_linger));
 
     if (verbosity_level > 1) {
         printf("...clearing SO_LINGER socket option, returned value: %d. ", socket_option_b);
@@ -98,7 +98,7 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
     #endif
 
 
-    /*--- Привязка вновь созданного сокета к IP-адресу ---*/
+    /*--- Связка вновь созданного сокета и адреса ---*/
 
     struct sockaddr_in serveraddr;
 
@@ -172,7 +172,6 @@ void sockets_write_message(int32_t connfd, char *buf, uint32_t verbosity_level)
 
 void sockets_close(int32_t sockfd)
 {
-    // Закрытие сокета.
     shutdown(sockfd, SHUT_RDWR);  // Вроде бы не обязательно, но иногда рекомендуется.
     close(sockfd);
 }

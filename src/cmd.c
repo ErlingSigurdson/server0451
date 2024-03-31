@@ -3,7 +3,7 @@
 /**
  * Имя файла: cmd.c
  * ----------------------------------------------------------------------------|---------------------------------------|
- * Назначение: функции и макросы для обработки команд.
+ * Назначение: обработка команд.
  * ----------------------------------------------------------------------------|---------------------------------------|
  * Примечания:
  */
@@ -28,22 +28,12 @@
 #include "config_general.h"
 
 // Локальные модули.
-#include "utilities.h"
 #include "cmd.h"
+#include "utilities.h"
 #include "sockets.h"
 
 
 /******************** ФУНКЦИИ *******************/
-
-void cmd_extract(char *buf, char *buf_topic, char *buf_cmd, char delim)
-{
-    char *cmd_ptr = strrchr(buf, delim);
-    *cmd_ptr = '\0';
-    strcpy(buf_cmd, cmd_ptr + 1);
-
-    char *topic_ptr = strchr(buf, delim);
-    strcpy(buf_topic, topic_ptr + 1);
-}
 
 void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
 {
@@ -58,7 +48,7 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
     /*--- Определение пути к файлу топика ---*/
         
     char topic_file_path[STR_MAX_LEN * 2 + 1] = {0};
-    readlink("/proc/self/exe", topic_file_path, sizeof(topic_file_path));
+    readlink("/proc/self/exe", topic_file_path, sizeof(topic_file_path) / 2);
     char *ptr = strrchr(topic_file_path, '/') + 1;
     strcpy(ptr, "../.topics/");
     strcat(topic_file_path, buf_topic);
@@ -119,4 +109,14 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
     
     strcpy(buf, "No valid command received.");
     sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
+}
+
+void cmd_extract(char *buf, char *buf_topic, char *buf_cmd, char delim)
+{
+    char *cmd_ptr = strrchr(buf, delim);
+    *cmd_ptr = '\0';
+    strcpy(buf_cmd, cmd_ptr + 1);
+
+    char *topic_ptr = strchr(buf, delim);
+    strcpy(buf_topic, topic_ptr + 1);
 }
