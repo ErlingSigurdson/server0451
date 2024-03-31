@@ -58,7 +58,7 @@ int32_t main(int32_t argc, char *argv[])
     /*--- Чтение и обработка опций командной строки и их аргументов ---*/
 
     // Переменные для хранения значений, переданных из командной строки.
-    int32_t port = -1;             // По умолчанию задано невалидное значение.
+    int32_t port = -1;  // По умолчанию задано невалидное значение.
     char password[STR_MAX_LEN + 1 ] = {0};
     uint32_t verbosity_level = 0;
 
@@ -185,7 +185,6 @@ int32_t main(int32_t argc, char *argv[])
     return 0;
 }
 
-// Чтение опций командной строки и их аргументов.
 void opt_handle(int32_t argc, char *argv[],
                 int32_t *port,
                 char *password, size_t password_buf_size,
@@ -225,7 +224,6 @@ void opt_handle(int32_t argc, char *argv[],
     }
 }
 
-// Вывод в консоль текущей даты и времени (UTC+0) в человекочитаемом формате.
 void timestamp_print()
 {
     char buf[STR_MAX_LEN + 1] = {0};
@@ -239,7 +237,6 @@ void timestamp_print()
     printf("%s", buf);
 }
 
-// Завершение связи с клиентом.
 void finish_communication(int32_t sockfd, uint32_t verbosity_level)
 {
     sockets_close(sockfd);
