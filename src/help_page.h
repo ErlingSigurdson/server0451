@@ -17,12 +17,12 @@
 
 #define PRINT_HELP_PAGE                                                                                      \
 puts("Simple Linux TCP server for IoT written in C language.");                                              \
-puts("Usage (start server): server0451 -p <port> -f <cmd_config_file_name> [-h][-v][-V]");                   \
-puts("Example: server0451 -p 80 -f cmd_config_server0451 -v");                                               \
+puts("Usage (start server): server0451 -p <port> -P <password> [-h][-v][-V]");                               \
+puts("Example: server0451 -p 451 -P my_new_pswd -v");                                                        \
 puts("");                                                                                                    \
 puts("Options:");                                                                                            \
 puts("    -p <port>       specify a port to listen to (mandatory option).");                                 \
-puts("    -f <file_path>  specify a name for a command configuration file (mandatory option).");             \
+puts("    -P <password>   specify a password to search for in incoming messages (mandatory option).");       \
 puts("    -v              verbose mode.");                                                                   \
 puts("    -V              even more verbose mode.");                                                         \
 puts("    -h              this help page.");                                                                 \
@@ -30,8 +30,7 @@ puts("");                                                                       
 puts("");                                                                                                    \
 puts("/*--- CONCEPT ---*/");                                                                                 \
 puts("");                                                                                                    \
-puts("Server listens to TCP/IP connections (including ones established for HTTP requests and responses)");   \
-puts("and acts according to TCP/IP message (including HTTP request) contents.");                             \
+puts("Server listens to TCP/IP connections and acts according to message contents.");                        \
 puts("");                                                                                                    \
 puts("Server works as a broker that allows for control over remote IoT devices with TCP/IP");                \
 puts("messaging capability which control simple ON/OFF loads like LEDSs, relays, etc.");                     \
@@ -66,17 +65,7 @@ puts("/*--- MISC ---*/");                                                       
 puts("");                                                                                                    \
 puts("1) Server logs are stored at /server0451/.log/log_server0451.");                                       \
 puts("");                                                                                                    \
-puts("2) If you want to control separate groups of IoT devices which are not supposed to update and read");  \
-puts("the same prescribed load status (aren't meant to share it), consider creating two or more separate");  \
-puts("directories containing all server0451 files and provide different PORT_1 and PORT_2 values in");       \
-puts("/.config/port_config_server0451 for every separate device flock. It's sloppy, I know.");
+puts("2) If you want to control separate groups of IoT devices, make them address to separate topics.");     \
 
 
 #endif  // Защита от повторного включения заголовочного файла.
-
-
-/*
- Сервер выступает в качестве брокера, хранящего
- * отданные клиентами-постерами команды в файлах-топиках и выдающего эти
- * команды клиентам-подписчикам (предполагается, что это устройства IoT).
-*/

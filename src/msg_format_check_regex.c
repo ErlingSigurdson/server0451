@@ -16,7 +16,10 @@
 // Из стандартной библиотеки языка Си.
 #include <stdio.h>
 #include <inttypes.h>
+//#include <stdbool.h>
 #include <string.h>
+//#include <stdlib.h>
+//#include <errno.h>
 
 // Из библиотек POSIX.
 #include <regex.h>
