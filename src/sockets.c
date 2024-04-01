@@ -45,7 +45,7 @@
 uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
 {
     /*--- Создание сокета ---*/
-    
+
     *sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (*sockfd < 0) {
         return SOCKET_ERR_CREATE;
@@ -58,7 +58,7 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
 
     /* Условной компиляцией можно управлять с помощью соответствующих директив,
      * приведённых в файле config_general.h.
-     */   
+     */
 
     #ifdef SOCKOPT_SO_REUSEADDR
     /* Разрешение заново использовать IP-адрес
@@ -79,7 +79,8 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
     #endif
 
     #ifdef SOCKOPT_SO_LINGER
-    /* Разрешение закрывать сокет, не дожидаясь завершения передачи данных.
+    /* Разрешение закрывать сокет, не дожидаясь обычного завершения
+     * процедуры передачи данных.
      * Если это делается, то обязательно до вызова bind().
      */
     struct linger so_linger;
@@ -149,7 +150,7 @@ void sockets_read_message(int32_t connfd, char *buf, size_t buf_size, uint32_t v
     // Чтение сообщения от клиента и его запись в буфер.
     read(connfd, buf, buf_size);
     utilities_nullify_all_trailing_CR_and_LF_in_string(buf);
-    
+
     // Вывод содержимого буфера.
     if (verbosity_level > 0) {
         printf("\nMessage received from the client:\n%s\n", buf);
@@ -157,16 +158,16 @@ void sockets_read_message(int32_t connfd, char *buf, size_t buf_size, uint32_t v
 }
 
 void sockets_write_message(int32_t connfd, char *buf, uint32_t verbosity_level)
-{  
+{
     utilities_nullify_all_trailing_CR_and_LF_in_string(buf);
 
-    strcat(buf, "\n"); 
+    strcat(buf, "\n");
     write(connfd, buf, strlen(buf));
 
     utilities_nullify_all_trailing_CR_and_LF_in_string(buf);
-    
+
     if (verbosity_level > 0) {
-        printf("\nMessage sent to the client:\n%s\n", buf);    
+        printf("\nMessage sent to the client:\n%s\n", buf);
     }
 }
 

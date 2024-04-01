@@ -87,7 +87,7 @@ int32_t main(int32_t argc, char *argv[])
 
 
     /*--- Работа с сокетами ---*/
-    
+
     int32_t sockfd = 0;
     uint32_t init_result = sockets_init(&sockfd, port, verbosity_level);
     switch (init_result) {
@@ -140,7 +140,7 @@ int32_t main(int32_t argc, char *argv[])
     char resulting_pattern[STR_MAX_LEN * 2 + 1] = {0};
     strcpy(resulting_pattern, password);
     strcat(resulting_pattern, MSG_FORMAT_REGEX_PATTERN);
-    
+
     uint32_t msg_format_check_result = msg_format_check_regex(buf, resulting_pattern);
     switch (msg_format_check_result) {
         case MSG_FORMAT_REGEX_COMP_FAIL:
@@ -181,7 +181,7 @@ int32_t main(int32_t argc, char *argv[])
     /*--- Завершение коммуникации с клиентом ---*/
 
     finish_communication(sockfd, verbosity_level);
-    
+
     return 0;
 }
 

@@ -46,7 +46,7 @@ uint32_t msg_format_check_regex(char *buf, const char *regex_pattern)
     }
 
     uint32_t msg_len = strlen(buf);
-    
+
     uint32_t offset_end = pmatch[0].rm_eo;
     buf[offset_end] = '\0';  // Обрезаем остаток строки.
     uint32_t match_len = strlen(buf);
