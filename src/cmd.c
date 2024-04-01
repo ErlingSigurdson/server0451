@@ -3,7 +3,7 @@
 /**
  * Имя файла: cmd.c
  * ----------------------------------------------------------------------------|---------------------------------------|
- * Назначение: функции и макросы для обработки команд.
+ * Назначение: обработка команд.
  * ----------------------------------------------------------------------------|---------------------------------------|
  * Примечания:
  */
@@ -18,92 +18,105 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <string.h>
-#include <stdlib.h>
+//#include <stdlib.h>
+//#include <errno.h>
+
+// Из библиотек POSIX.
+#include <unistd.h>
+
+// Настройки проекта.
+#include "config_general.h"
 
 // Локальные модули.
-#include "utilities.h"
 #include "cmd.h"
+#include "utilities.h"
+#include "sockets.h"
 
 
 /******************** ФУНКЦИИ *******************/
 
-void cmd_config_file_read_else_write_defaults(char cmd_config_file_contents[CMD_CONFIG_FILE_LIST_LEN][STR_MAX_LEN],
-                                              char *cmd_config_file_path)
+void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
 {
-    FILE *f = fopen(cmd_config_file_path, "r");
+    /* --- Извлечение имени топика и команды из сообщения ---*/
     
-    if (f == NULL) {
-        f = fopen(cmd_config_file_path, "w");
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_1, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_CURRENT_CMD, f);
-        
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_2, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_ASCII_CMD_ON, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_3, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_URI_CMD_ON, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_4, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_VAL_CMD_ON, f);
-        
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_5, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_ASCII_CMD_OFF, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_6, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_URI_CMD_OFF, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_7, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_VAL_CMD_OFF, f);
-        
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_8, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_ASCII_CMD_TOGGLE, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_9, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_URI_CMD_TOGGLE, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_10, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_VAL_CMD_TOGGLE, f);
-        
-        fputs(DEFAULT_CMD_CONFIG_FILE_COMMENT_11, f);
-        fputs(DEFAULT_CMD_CONFIG_FILE_REQUEST_CMD, f);
+    char buf_topic[STR_MAX_LEN + 1] = {0};
+    char buf_cmd[STR_MAX_LEN + 1] = {0};
+    cmd_extract(buf, buf_topic, buf_cmd, DELIM_CHAR);
+    utilities_to_lowercase_string(buf_topic);
 
-        freopen(NULL, "r", f);
-    }
 
-    char buf[STR_MAX_LEN + 1] = {0};
-    uint32_t i = 0;
-    bool end_reached = 0;
-    while (i < CMD_CONFIG_FILE_LIST_LEN && end_reached == (bool)NULL) {
-        end_reached = !(bool)fgets(buf, sizeof(buf), f);
+    /*--- Определение пути к файлу топика ---*/
+        
+    char topic_file_path[STR_MAX_LEN * 2 + 1] = {0};
+    readlink("/proc/self/exe", topic_file_path, sizeof(topic_file_path) / 2);
+    char *ptr = strrchr(topic_file_path, '/') + 1;
+    strcpy(ptr, "../.topics/");
+    strcat(topic_file_path, buf_topic);
 
-        if (strstr(buf, "CMD") && strchr(buf, '=')) {
-            strcpy(cmd_config_file_contents[i], buf);
-            ++i;
+
+    /*--- Выполнение команды ---*/
+
+    bool current_cmd_load_toggle = !strcmp(buf_cmd, CMD_LOAD_TOGGLE);
+    if (current_cmd_load_toggle) {
+        utilities_read_from_file_single_line(buf_cmd, sizeof(buf_cmd), topic_file_path);
+    
+        if (!strcmp(buf_cmd, CMD_LOAD_ON)) {
+            strcpy(buf_cmd, CMD_LOAD_OFF);
+        } else if (!strcmp(buf_cmd, CMD_LOAD_OFF)) {
+            strcpy(buf_cmd, CMD_LOAD_ON);
+        } else {
+            printf("\nError: can't toggle current load state (invalid data in the topic).\n");
+            strcpy(buf, "Error: can't toggle current load state (invalid data in the topic).");
+            sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
+            
+            return;
         }
+    }
 
-        memset(buf, '\0', sizeof(buf));
+    bool current_cmd_load_on =        !strcmp(buf_cmd, CMD_LOAD_ON);
+    bool current_cmd_load_off =       !strcmp(buf_cmd, CMD_LOAD_OFF);
+    bool current_cmd_topic_request =  !strcmp(buf_cmd, CMD_TOPIC_REQUEST);
+    
+    if (current_cmd_load_on || current_cmd_load_off) {
+        utilities_write_to_file_single_line(buf_cmd, topic_file_path);
+
+        printf("\nNew command posted:\n");
+        printf("%s\n", buf_cmd);
+
+        strcpy(buf, "New command posted: ");
+        strcat(buf, buf_cmd);
+        sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
+        
+        return;
     }
     
-    if (i != CMD_CONFIG_FILE_LIST_LEN) {
-        printf("Error reading command configuration file contents.\n");
-        printf("For a reference insert \"/config_server0451\" as an -f option argument\n");
-        printf("and follow new file's format and pattern.");
-        exit(0);
-    }
+    if (current_cmd_topic_request) {
+        utilities_read_from_file_single_line(buf_cmd, sizeof(buf_cmd), topic_file_path);
 
-    for (uint32_t i = 0; i < CMD_CONFIG_FILE_LIST_LEN; ++i) {
-        strcpy(cmd_config_file_contents[i], strchr(cmd_config_file_contents[i], '=') + 1);
-        utilities_nullify_all_trailing_CR_and_LF_in_string(cmd_config_file_contents[i]);
+        printf("\nCurrent topic contents requested.\n");
+
+        sockets_write_message(connfd, buf_cmd, verbosity_level);
+        
+        return;
     }
+        
+    /* Программа доходит до этой точки только в случае, если в сообщении
+     * от клиента не было найдено ни одной валидной команды.
+     */
+    if (verbosity_level > 0) {
+        printf("\nNo valid command received.\n");
+    }
+    
+    strcpy(buf, "No valid command received.");
+    sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
 }
 
-void cmd_config_file_update_current_load_status_cmd(char *cmd_config_file_path, bool load_status_cmd_to_post)
+void cmd_extract(char *buf, char *buf_topic, char *buf_cmd, char delim)
 {
-	FILE *f = fopen(cmd_config_file_path, "r+");
-	char c = 0;
-	while (c != '=' && c != EOF) {
-		c = fgetc(f); 
-	}
+    char *cmd_ptr = strrchr(buf, delim);
+    *cmd_ptr = '\0';
+    strcpy(buf_cmd, cmd_ptr + 1);
 
-	if (load_status_cmd_to_post) {
-		fputc('1', f);
-	} else {
-		fputc('0', f);
-	}
-
-	fclose(f);
+    char *topic_ptr = strchr(buf, delim);
+    strcpy(buf_topic, topic_ptr + 1);
 }

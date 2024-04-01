@@ -15,61 +15,65 @@
 #ifndef HELP_PAGE_H
 #define HELP_PAGE_H
 
-#define PRINT_HELP_PAGE                                                                                      \
-puts("Simple Linux TCP server for IoT written in C language.");                                              \
-puts("Usage (start server): server0451 -p <port> -f <cmd_config_file_name> [-h][-v][-V]");                   \
-puts("Example: server0451 -p 80 -f cmd_config_server0451 -v");                                               \
-puts("");                                                                                                    \
-puts("Options:");                                                                                            \
-puts("    -p <port>       specify a port to listen to (mandatory option).");                                 \
-puts("    -f <file_path>  specify a name for a command configuration file (mandatory option).");             \
-puts("    -v              verbose mode.");                                                                   \
-puts("    -V              even more verbose mode.");                                                         \
-puts("    -h              this help page.");                                                                 \
-puts("");                                                                                                    \
-puts("");                                                                                                    \
-puts("/*--- CONCEPT ---*/");                                                                                 \
-puts("");                                                                                                    \
-puts("Server listens to TCP/IP connections (including ones established for HTTP requests and responses)");   \
-puts("and acts according to TCP/IP message (including HTTP request) contents.");                             \
-puts("");                                                                                                    \
-puts("Server works as a broker that allows for control over remote IoT devices with TCP/IP");                \
-puts("messaging capability which control simple ON/OFF loads like LEDSs, relays, etc.");                     \
-puts("");                                                                                                    \
-puts("Server stores currently prescribed load status (1 or 0, \"ON\" or \"OFF\") in a command");             \
-puts("configuration file alongside with substrings which, upon being found in incoming TCP/IP messages");    \
-puts("(including HTTP requests), trigger server to either change prescribed load status");                   \
-puts("or serve it to a client.");                                                                            \
-puts("");                                                                                                    \
-puts("TCP/IP client that sends a command in order to change currently prescribed load status is called");    \
-puts("a client-poster. TCP/IP client that sends a command in order to get currently prescribed load");       \
-puts("status is called a client-subscriber.");                                                               \
-puts("");                                                                                                    \
-puts("Server runs simultaneously at two ports specified in /server0451/.config/port_config_server0451.");    \
-puts("First one is for client-posters, second one is for client-subscribers.");                              \
-puts("");                                                                                                    \
-puts("Check newly created command configuration file to learn (and modify if necessary)");                   \
-puts("what substrings found in TCP/IP messages trigger updating and serving prescribed load status.");       \
-puts("");                                                                                                    \
-puts("");                                                                                                    \
-puts("/*--- HOW TO START ---*/");                                                                            \
-puts("");                                                                                                    \
-puts("Go to /server0451/src directory and run make utility to build a program executable file.");            \
-puts("");                                                                                                    \
-puts("In order to start server0451, run server0451.sh (an executable shell script) and choose between)");    \
-puts("loop mode (for continuous listening) and oneshot mode (for a test run). In both cases program is");    \
-puts("run using nohup utility, and its stdout and stderr are redirected to a log file at");                  \
-puts("/server0451/.log/log_server0451.");                                                                    \
-puts("");                                                                                                    \
-puts("");                                                                                                    \
-puts("/*--- MISC ---*/");                                                                                    \
-puts("");                                                                                                    \
-puts("1) Server logs are stored at /server0451/.log/log_server0451.");                                       \
-puts("");                                                                                                    \
-puts("2) If you want to control separate groups of IoT devices which are not supposed to update and read");  \
-puts("the same prescribed load status (aren't meant to share it), consider creating two or more separate");  \
-puts("directories containing all server0451 files and provide different PORT_1 and PORT_2 values in");       \
-puts("/.config/port_config_server0451 for every separate device flock. It's sloppy, I know.");
+#define PRINT_HELP_PAGE  \
+puts("Simple Linux TCP server for IoT written in C language.");                                                \
+puts("Basic usage (start server): sudo execute_server0451 -p <port> -P <password> [-h][-v][-V]");              \
+puts("Example: sudo execute_server0451 -p 451 -P my_pswd -v");                                                 \
+puts("It's highly recommended to stick to a provided shell script \"server0451.sh\".");                        \
+puts("");                                                                                                      \
+puts("Options:");                                                                                              \
+puts("    -p <port>      specify a port to listen to (mandatory option).");                                    \
+puts("    -P <password>  specify a password to search for in any incoming message (mandatory option).");       \
+puts("    -v             verbose mode.");                                                                      \
+puts("    -V             even more verbose mode.");                                                            \
+puts("    -h             this help page.");                                                                    \
+puts("");                                                                                                      \
+puts("");                                                                                                      \
+puts("/*--- CONCEPT ---*/");                                                                                   \
+puts("");                                                                                                      \
+puts("Server acts as a broker between clients-posters which push simple ON/OFF commands into specialized");    \
+puts("files (\"topics\"), and clients-subscribers which request such commands from respective topics.");       \
+puts("");                                                                                                      \
+puts("Any device capable of TCP/IP messaging can be a client, but the role of clients-subscribers");           \
+puts("is suggested for IoT devices which control simple ON/OFF loads like LEDs, relays, etc.");                \
+puts("");                                                                                                      \
+puts("Topics are stored in /server0451/.topics directory. Initially they are absent - server creates");        \
+puts("a topic upon reception of a first valid message referring to it. There can be up to 100 topics,");       \
+puts("indexed 1 through 100.");                                                                                \
+puts("");                                                                                                      \
+puts("Server is suitable for both WANs and LANs as long as it's provided with a unique IP address.");          \
+puts("");                                                                                                      \
+puts("");                                                                                                      \
+puts("/*--- QUICK START GUIDE ---*/");                                                                         \
+puts("");                                                                                                      \
+puts("Open /server0451/src directory and run make command to build an executable binary file.");               \
+puts("");                                                                                                      \
+puts("Specify ports (server uses 2 ports simultaneously - one for subscribers and another one for posters)");  \
+puts("in /server0451/.config/port_config_server0451.");                                                        \
+puts("");                                                                                                      \
+puts("Specify a password in /server0451/.config/password_config_server0451. Default password is \"admin\".");  \
+puts("Password must consist of 5 to 40 alphanumeric characters. If password is not specified, you will");      \
+puts("have an opportunity to insert it from the console.");                                                    \
+puts("");                                                                                                      \
+puts("Run /server0451/server0451.sh shell script. Choose between a full-fledged (l)oop mode and");             \
+puts("a test (o)neshot mode. Don't worry about closing your console or ssh session after the server");         \
+puts("got started - shell script uses nohup utility to run server in a loop.");                                \
+puts("");                                                                                                      \
+puts("Clients must stick to the following message format, otherwise server will reject any command:");         \
+puts("");                                                                                                      \
+puts("<password>:topic_<X>:<command_text>");                                                                   \
+puts("where");                                                                                                 \
+puts("    password     - is a password you've specified before.");                                             \
+puts("    X            - is an integer value from 1 to 100.");                                                 \
+puts("    command_text - is one of the commands listed in config_general.h: AT+SETLOAD=ON,");                  \
+puts("                   AT+SETLOAD=OFF, AT+SETLOAD=TOGGLE, AT+SERVETOPIC.");                                  \
+puts("");                                                                                                      \
+puts("Shell script runs two instances of the server simultaneously, using one of two specified ports");        \
+puts("for each. First port is suggested for clients-posters, second one - for clients-subscribers.");          \
+puts("");                                                                                                      \
+puts("Server logs are stored in /server0451/.log/log_server0451.");                                            \
+puts("");                                                                                                      \
+puts("If you want to control separate groups of IoT devices, make them address to separate topics.");
 
 
 #endif  // Защита от повторного включения заголовочного файла.

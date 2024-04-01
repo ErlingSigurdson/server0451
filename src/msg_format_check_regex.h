@@ -1,9 +1,9 @@
 /******************* ОПИСАНИЕ *******************/
 
 /**
- * Имя файла: cmd.h
+ * Имя файла: msg_format_check_regex.h
  * ----------------------------------------------------------------------------|---------------------------------------|
- * Назначение: обработка команд.
+ * Назначение: проверка формата сообщения с помощью регулярных выражений.
  * ----------------------------------------------------------------------------|---------------------------------------|
  * Примечания:
  */
@@ -12,25 +12,33 @@
 /************ ДИРЕКТИВЫ ПРЕПРОЦЕССОРА ***********/
 
 // Защита от повторного включения заголовочного файла.
-#ifndef CMD_H
-#define CMD_H
+#ifndef MSG_FORMAT_CHECK_REGEX_H
+#define MSG_FORMAT_CHECK_REGEX_H
 
 
 /*--- Включения ---*/
 
 // Из стандартной библиотеки языка Си.
 #include <stdio.h>
-#include <inttypes.h>
+//#include <inttypes.h>
 //#include <stdbool.h>
 //#include <string.h>
 //#include <stdlib.h>
 //#include <errno.h>
 
 
+/*--- Прочее ---*/
+
+// Коды результата.
+#define MSG_FORMAT_REGEX_COMP_FAIL 3
+#define MSG_FORMAT_NO_MATCH 2
+#define MSG_FORMAT_PARTIAL_MATCH 1
+#define MSG_FORMAT_MATCH 0
+
+
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/
 
-void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level);
-void cmd_extract(char *buf, char *buf_topic, char *buf_cmd, char delim);
+uint32_t msg_format_check_regex(char *buf, const char *pattern);
 
 
 #endif  // Защита от повторного включения заголовочного файла.
