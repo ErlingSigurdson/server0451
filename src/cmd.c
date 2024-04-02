@@ -73,8 +73,8 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
         }
     }
 
-    bool current_cmd_load_on =        !strcmp(buf_cmd, CMD_LOAD_ON);
-    bool current_cmd_load_off =       !strcmp(buf_cmd, CMD_LOAD_OFF);
+    bool current_cmd_load_on       =  !strcmp(buf_cmd, CMD_LOAD_ON);
+    bool current_cmd_load_off      =  !strcmp(buf_cmd, CMD_LOAD_OFF);
     bool current_cmd_topic_request =  !strcmp(buf_cmd, CMD_TOPIC_REQUEST);
 
     if (current_cmd_load_on || current_cmd_load_off) {
@@ -114,9 +114,13 @@ void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level)
 void cmd_extract(char *buf, char *buf_topic, char *buf_cmd, char delim)
 {
     char *cmd_ptr = strrchr(buf, delim);
-    *cmd_ptr = '\0';
-    strcpy(buf_cmd, cmd_ptr + 1);
-
+    if (cmd_ptr != NULL) {
+        *cmd_ptr = '\0';
+        strcpy(buf_cmd, cmd_ptr + 1);
+    }
+    
     char *topic_ptr = strchr(buf, delim);
-    strcpy(buf_topic, topic_ptr + 1);
+    if (topic_ptr != NULL) {
+        strcpy(buf_topic, topic_ptr + 1);
+    }
 }
