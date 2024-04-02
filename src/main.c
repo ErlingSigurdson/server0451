@@ -17,7 +17,7 @@
 // Из стандартной библиотеки языка Си.
 #include <stdio.h>
 #include <inttypes.h>
-//#include <stdbool.h>
+#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -42,13 +42,14 @@
 void opt_handle(int32_t argc, char *argv[],
                 int32_t *port,
                 char *password, size_t password_buf_size,
+                bool *oneshot_mode, 
                 uint32_t *verbosity_level);
 
 // Вывод в консоль текущей даты и времени (UTC+0) в человекочитаемом формате.
 void timestamp_print();
 
 // Завершение связи с клиентом.
-void finish_communication(int32_t sockfd, uint32_t verbosity_level);
+void finish_communication(int32_t fd, uint32_t verbosity_level);
 
 
 /******************** ФУНКЦИИ *******************/
@@ -60,10 +61,11 @@ int32_t main(int32_t argc, char *argv[])
     // Переменные для хранения значений, переданных из командной строки.
     int32_t port = -1;  // По умолчанию задано невалидное значение.
     char password[STR_MAX_LEN + 1 ] = {0};
+    bool oneshot_mode = 0;
     uint32_t verbosity_level = 0;
 
     // Чтение опций командной строки и их аргументов.
-    opt_handle(argc, argv, &port, password, sizeof(password), &verbosity_level);
+    opt_handle(argc, argv, &port, password, sizeof(password), &oneshot_mode, &verbosity_level);
 
     if (port <= 0) {
         fprintf(stderr, "Error: invalid port.\n");
@@ -114,7 +116,7 @@ int32_t main(int32_t argc, char *argv[])
             break;
     }
 
-    while (1) {
+    do {
         int32_t connfd = 0;
         uint32_t set_connection_result = sockets_set_connection(sockfd, &connfd, port, verbosity_level);
         switch (set_connection_result) {
@@ -147,17 +149,17 @@ int32_t main(int32_t argc, char *argv[])
             case MSG_FORMAT_REGEX_COMP_FAIL:
                 printf("\nMessage format check failed: error compiling regex.\n");
                 strcpy(buf, "Message format check failed: error compiling regex.");
-                sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
+                sockets_write_message(connfd, buf, 0);
                 break;
             case MSG_FORMAT_NO_MATCH:
                 printf("\nMessage format check failed: no match found.\n");
                 strcpy(buf, "Message format check failed: no match found.");
-                sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
+                sockets_write_message(connfd, buf, 0);
                 break;
             case MSG_FORMAT_PARTIAL_MATCH:
                 printf("\nMessage format check failed: partial match.\n");
                 strcpy(buf, "Message format check failed: partial match.");
-                sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
+                sockets_write_message(connfd, buf, 0);
                 break;
             case MSG_FORMAT_MATCH:
                 // Проверка формата сообщения пройдена.
@@ -177,12 +179,10 @@ int32_t main(int32_t argc, char *argv[])
 
         finish_communication(connfd, verbosity_level);
     }
+    while (!oneshot_mode);
 
-    /* В норме исполнение программы не должно доходить досюда,
-     * но предполагаемое закрытие "слушающего" сокета иллюстрирует
-     * логику работы сокетов.
-     */
-    finish_communication(sockfd, verbosity_level);
+    // Исполнение программы доходит досюда только в режиме одиночного прогона.
+    finish_communication(sockfd, 0);
 
     return 0;
 }
@@ -190,20 +190,26 @@ int32_t main(int32_t argc, char *argv[])
 void opt_handle(int32_t argc, char *argv[],
                 int32_t *port,
                 char *password, size_t password_buf_size,
+                bool *oneshot_mode,
                 uint32_t *verbosity_level)
 {
     int32_t opt = 0;
-    while ((opt = getopt(argc, argv, "p:P:vVh")) >= 0) {
+    while ((opt = getopt(argc, argv, "p:P:ovVh")) >= 0) {
         switch (opt) {
             // Обязательная опция, принимает номер порта в качестве аргумента.
             case 'p':
                 *port = strtol(optarg, NULL, 10);
                 break;
 
+            // Обязательная опция, принимает строку с паролем в качестве аргумента.
             case 'P':
                 if (strlen(optarg) < password_buf_size) {
                     sscanf(optarg, "%s", password);
                 }
+                break;
+
+            case 'o':
+                *oneshot_mode = 1;
                 break;
 
             case 'v':
