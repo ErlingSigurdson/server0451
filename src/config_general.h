@@ -21,6 +21,9 @@
 // Предельная длина строки.
 #define STR_MAX_LEN 1000
 
+// Минимальная длина пароля.
+#define PASSWORD_MIN_LEN 5
+
 // Формат, которому должны следовать сообщения от клиентов.
 #define DELIM_STR  ":"
 #define DELIM_CHAR ':'

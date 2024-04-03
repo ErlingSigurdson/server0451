@@ -73,7 +73,7 @@ int32_t main(int32_t argc, char *argv[])
         exit(1);
     }
 
-    if (strlen(password) <= 0) {
+    if (strlen(password) < PASSWORD_MIN_LEN) {
         fprintf(stderr, "Error: invalid password.\n");
         fprintf(stderr, "Please restart the program and insert a valid password as a -P option argument.\n");
         exit(1);
@@ -178,6 +178,16 @@ int32_t main(int32_t argc, char *argv[])
         /*--- Завершение коммуникации с очередным клиентом ---*/
 
         finish_communication(connfd, verbosity_level);
+
+
+        /*--- Вывод буфера в консоль ---*/
+
+        /* Если внутри программы есть бесконечный цикл, то по умолчанию
+         * выводимые данные будут копиться в буфере и так и не попадут
+         * в терминал.
+         */
+        fflush(stdout);
+        fflush(stderr);
     }
     while (!oneshot_mode);
 

@@ -30,13 +30,17 @@ read -p "Do you want to run server0451 in a (l)oop or a (o)neshot mode?" MODE
 
 ### Если файл с паролем отсутствует или пароль в нём не задан, пароль нужно будет задать из командной строки.
 if [ -z "${PASSWORD}" ]; then
-    read -p "Create a password. All messages sent to the server will have to start with it." PASSWORD
+    read -p "Password is not specified in a config file. Please insert a new password. All messages sent to the server will have to start with it." PASSWORD
 fi
+
+### Создание нового файла с логами.
+rm -f $LOG_FILE_PATH
+touch $LOG_FILE_PATH
 
 ### Запуск сервера в циклическом режиме (основной режим).
 if [ "$MODE" = "l" ] || [ "$MODE" = "L" ]; then
     echo "server0451 started in a loop mode at port $PORT."
-    nohup sudo $EXEC_BIN_FILE_PATH -p $PORT -P $PASSWORD -V >> $LOG_FILE_PATH 2>&1
+    nohup sudo $EXEC_BIN_FILE_PATH -p $PORT -P $PASSWORD -V >> $LOG_FILE_PATH 2>&1 &
 
 ### Запуск сервера в режиме одиночного прогона (тестовый режим).
 elif [ "$MODE" = "o" ] || [ "$MODE" = "O" ]; then
@@ -47,7 +51,7 @@ else
 fi
 
 ### Хранение и удаление логов.
-while true; do
+while [ "$MODE" = "l" ] || [ "$MODE" = "L" ]; do
     LOG_SIZE=$(stat "$LOG_FILE_PATH" | grep -E -o "Size: [0-9]+" | grep -E -o "[0-9]+")
     if [ "$LOG_SIZE" -ge "$MAX_LOG_SIZE" ]; then
         echo "Creating a new log file." > $LOG_FILE_PATH
