@@ -14,7 +14,7 @@ PASSWORD_CONFIG_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/.config/password_config_ser
 PASSWORD=$(grep -E -o ".{5,40}" "$PASSWORD_CONFIG_FILE_PATH")
 
 LOG_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/.log/log_server0451"
-MAX_LOG_SIZE=50000
+MAX_LOG_SIZE=50000000
 
 
 # Основная часть скрипта.
@@ -40,7 +40,8 @@ touch $LOG_FILE_PATH
 ### Запуск сервера в циклическом режиме (основной режим).
 if [ "$MODE" = "l" ] || [ "$MODE" = "L" ]; then
     echo "server0451 started in a loop mode at port $PORT."
-    nohup sudo $EXEC_BIN_FILE_PATH -p $PORT -P $PASSWORD -V >> $LOG_FILE_PATH 2>&1 &
+    sudo $EXEC_BIN_FILE_PATH -p $PORT -P $PASSWORD -V >> $LOG_FILE_PATH 2>&1
+    #disown
 
 ### Запуск сервера в режиме одиночного прогона (тестовый режим).
 elif [ "$MODE" = "o" ] || [ "$MODE" = "O" ]; then
