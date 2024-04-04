@@ -42,8 +42,10 @@ uint32_t msg_format_check_regex(char *buf, const char *regex_pattern)
     regmatch_t pmatch[1] = {0};
 
     if (regexec(&regex_ptr, buf, nmatch, pmatch, 0) != 0) {
+        regfree(&regex_ptr);
         return MSG_FORMAT_NO_MATCH;
     }
+    regfree(&regex_ptr);
 
     uint32_t msg_len = strlen(buf);
 

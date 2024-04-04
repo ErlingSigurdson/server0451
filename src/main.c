@@ -48,7 +48,7 @@ void opt_handle(int32_t argc, char *argv[],
 void timestamp_print();
 
 // Завершение связи с клиентом.
-void finish_communication(int32_t sockfd, uint32_t verbosity_level);
+void finish_communication(int32_t fd, uint32_t verbosity_level);
 
 
 /******************** ФУНКЦИИ *******************/
@@ -180,7 +180,8 @@ int32_t main(int32_t argc, char *argv[])
 
     /*--- Завершение коммуникации с клиентом ---*/
 
-    finish_communication(sockfd, verbosity_level);
+    finish_communication(connfd, verbosity_level);
+    finish_communication(sockfd, 0);
 
     return 0;
 }
