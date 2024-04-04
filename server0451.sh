@@ -40,8 +40,7 @@ touch $LOG_FILE_PATH
 ### Запуск сервера в циклическом режиме (основной режим).
 if [ "$MODE" = "l" ] || [ "$MODE" = "L" ]; then
     echo "server0451 started in a loop mode at port $PORT."
-    sudo $EXEC_BIN_FILE_PATH -p $PORT -P $PASSWORD -V >> $LOG_FILE_PATH 2>&1
-    #disown
+    nohup sudo $EXEC_BIN_FILE_PATH -p $PORT -P $PASSWORD -V >> $LOG_FILE_PATH 2>&1 &
 
 ### Запуск сервера в режиме одиночного прогона (тестовый режим).
 elif [ "$MODE" = "o" ] || [ "$MODE" = "O" ]; then
