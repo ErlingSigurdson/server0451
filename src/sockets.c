@@ -118,6 +118,15 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
         printf("...socket successfully bound at port %d.\n", port);
     }
 
+
+    /*--- Связка вновь созданного сокета и адреса ---*/
+
+    if (listen(*sockfd, SOCKET_BACKLOG) != 0) {
+        return SOCKET_ERR_LISTEN;
+    } else if (verbosity_level > 0) {
+        printf("...server is listening at port %d.\n", port);
+    }
+
     return SOCKET_OK;
 }
 
@@ -125,13 +134,6 @@ uint32_t sockets_set_connection(int32_t sockfd, int32_t *connfd, int32_t port, u
 {
     int32_t socklen = 0;
     struct sockaddr_in clientaddr;
-
-    // Сервер начинает слушать.
-    if (listen(sockfd, SOCKET_BACKLOG) != 0) {
-        return SOCKET_ERR_LISTEN;
-    } else if (verbosity_level > 0) {
-        printf("...server is listening at port %d.\n", port);
-    }
 
     // Установка связи с клиентом.
     socklen = sizeof(clientaddr);
@@ -171,8 +173,8 @@ void sockets_write_message(int32_t connfd, char *buf, uint32_t verbosity_level)
     }
 }
 
-void sockets_close(int32_t sockfd)
+void sockets_close(int32_t fd)
 {
-    shutdown(sockfd, SHUT_RDWR);  // Вроде бы не обязательно, но иногда рекомендуется.
-    close(sockfd);
+    shutdown(fd, SHUT_RDWR);  // Вроде бы не обязательно, но иногда рекомендуется.
+    close(fd);
 }

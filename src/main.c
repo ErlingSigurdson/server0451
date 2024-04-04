@@ -17,7 +17,7 @@
 // Из стандартной библиотеки языка Си.
 #include <stdio.h>
 #include <inttypes.h>
-//#include <stdbool.h>
+#include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -42,13 +42,14 @@
 void opt_handle(int32_t argc, char *argv[],
                 int32_t *port,
                 char *password, size_t password_buf_size,
+                bool *oneshot_mode, 
                 uint32_t *verbosity_level);
 
 // Вывод в консоль текущей даты и времени (UTC+0) в человекочитаемом формате.
 void timestamp_print();
 
 // Завершение связи с клиентом.
-void finish_communication(int32_t sockfd, uint32_t verbosity_level);
+void finish_communication(int32_t fd, uint32_t verbosity_level);
 
 
 /******************** ФУНКЦИИ *******************/
@@ -60,10 +61,11 @@ int32_t main(int32_t argc, char *argv[])
     // Переменные для хранения значений, переданных из командной строки.
     int32_t port = -1;  // По умолчанию задано невалидное значение.
     char password[STR_MAX_LEN + 1 ] = {0};
+    bool oneshot_mode = 0;
     uint32_t verbosity_level = 0;
 
     // Чтение опций командной строки и их аргументов.
-    opt_handle(argc, argv, &port, password, sizeof(password), &verbosity_level);
+    opt_handle(argc, argv, &port, password, sizeof(password), &oneshot_mode, &verbosity_level);
 
     if (port <= 0) {
         fprintf(stderr, "Error: invalid port.\n");
@@ -71,7 +73,7 @@ int32_t main(int32_t argc, char *argv[])
         exit(1);
     }
 
-    if (strlen(password) <= 0) {
+    if (strlen(password) < PASSWORD_MIN_LEN) {
         fprintf(stderr, "Error: invalid password.\n");
         fprintf(stderr, "Please restart the program and insert a valid password as a -P option argument.\n");
         exit(1);
@@ -101,6 +103,11 @@ int32_t main(int32_t argc, char *argv[])
             fprintf(stderr, "Error description: %s\n", strerror(errno));
             exit(1);
             break;
+        case SOCKET_ERR_LISTEN:
+            fprintf(stderr, "\nError: entering a listen mode at port %d failed.\n", port);
+            fprintf(stderr, "Error description: %s\n", strerror(errno));
+            exit(1);
+            break;
         case SOCKET_OK:
             // Успешная инициализация сокета.
             break;
@@ -109,78 +116,83 @@ int32_t main(int32_t argc, char *argv[])
             break;
     }
 
-    int32_t connfd = 0;
-    uint32_t set_connection_result = sockets_set_connection(sockfd, &connfd, port, verbosity_level);
-    switch (set_connection_result) {
-        case SOCKET_ERR_LISTEN:
-            fprintf(stderr, "\nError: entering a listen mode at port %d failed.\n", port);
-            fprintf(stderr, "Error description: %s\n", strerror(errno));
-            exit(1);
-            break;
-        case SOCKET_ERR_ACCEPT:
-            fprintf(stderr, "\nError: server failed to accept a client at port %d.\n", port);
-            fprintf(stderr, "Error description: %s\n", strerror(errno));
-            exit(1);
-            break;
-        case SOCKET_OK:
-            // Установка связи с клиентом прошла успешно.
-            break;
-        default:
-            // Ничего не делаем, отдаём дань MISRA.
-            break;
+    do {
+        int32_t connfd = 0;
+        uint32_t set_connection_result = sockets_set_connection(sockfd, &connfd, port, verbosity_level);
+        switch (set_connection_result) {
+            case SOCKET_ERR_ACCEPT:
+                fprintf(stderr, "\nError: server failed to accept a client at port %d.\n", port);
+                fprintf(stderr, "Error description: %s\n", strerror(errno));
+                continue;
+                break;
+            case SOCKET_OK:
+                // Установка связи с клиентом прошла успешно.
+                break;
+            default:
+                // Ничего не делаем, отдаём дань MISRA.
+                break;
+        }
+
+        // Получение сообщения от клиента.
+        char buf[STR_MAX_LEN + 1] = {0};
+        sockets_read_message(connfd, buf, sizeof(buf), verbosity_level);
+
+
+        /*--- Проверка формата сообщения от клиента ---*/
+
+        char resulting_pattern[STR_MAX_LEN * 2 + 1] = {0};
+        strcpy(resulting_pattern, password);
+        strcat(resulting_pattern, MSG_FORMAT_REGEX_PATTERN);
+
+        uint32_t msg_format_check_result = msg_format_check_regex(buf, resulting_pattern);
+        switch (msg_format_check_result) {
+            case MSG_FORMAT_REGEX_COMP_FAIL:
+                printf("\nMessage format check failed: error compiling regex.\n");
+                strcpy(buf, "Message format check failed: error compiling regex.");
+                sockets_write_message(connfd, buf, 0);
+                break;
+            case MSG_FORMAT_NO_MATCH:
+                printf("\nMessage format check failed: no match found.\n");
+                strcpy(buf, "Message format check failed: no match found.");
+                sockets_write_message(connfd, buf, 0);
+                break;
+            case MSG_FORMAT_PARTIAL_MATCH:
+                printf("\nMessage format check failed: partial match.\n");
+                strcpy(buf, "Message format check failed: partial match.");
+                sockets_write_message(connfd, buf, 0);
+                break;
+            case MSG_FORMAT_MATCH:
+                // Проверка формата сообщения пройдена.
+                break;
+            default:
+                // Ничего не делаем, отдаём дань MISRA.
+                break;
+        }
+
+
+        /*--- Обработка поступившей команды ---*/
+
+        cmd_handle(connfd, buf, verbosity_level);
+
+
+        /*--- Завершение коммуникации с очередным клиентом ---*/
+
+        finish_communication(connfd, verbosity_level);
+
+
+        /*--- Вывод буфера в консоль ---*/
+
+        /* Если внутри программы есть бесконечный цикл, то по умолчанию
+         * выводимые данные будут копиться в буфере и так и не попадут
+         * в терминал.
+         */
+        fflush(stdout);
+        fflush(stderr);
     }
+    while (!oneshot_mode);
 
-    // Получение сообщения от клиента.
-    char buf[STR_MAX_LEN + 1] = {0};
-    sockets_read_message(connfd, buf, sizeof(buf), verbosity_level);
-
-
-    /*--- Проверка формата сообщения от клиента ---*/
-
-    char resulting_pattern[STR_MAX_LEN * 2 + 1] = {0};
-    strcpy(resulting_pattern, password);
-    strcat(resulting_pattern, MSG_FORMAT_REGEX_PATTERN);
-
-    uint32_t msg_format_check_result = msg_format_check_regex(buf, resulting_pattern);
-    switch (msg_format_check_result) {
-        case MSG_FORMAT_REGEX_COMP_FAIL:
-            printf("\nMessage format check failed: error compiling regex.\n");
-            strcpy(buf, "Message format check failed: error compiling regex.");
-            sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
-            finish_communication(sockfd, verbosity_level);
-            exit(1);
-            break;
-        case MSG_FORMAT_NO_MATCH:
-            printf("\nMessage format check failed: no match found.\n");
-            strcpy(buf, "Message format check failed: no match found.");
-            sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
-            finish_communication(sockfd, verbosity_level);
-            exit(1);
-            break;
-        case MSG_FORMAT_PARTIAL_MATCH:
-            printf("\nMessage format check failed: partial match.\n");
-            strcpy(buf, "Message format check failed: partial match.");
-            sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
-            finish_communication(sockfd, verbosity_level);
-            exit(1);
-            break;
-        case MSG_FORMAT_MATCH:
-            // Проверка формата сообщения пройдена.
-            break;
-        default:
-            // Ничего не делаем, отдаём дань MISRA.
-            break;
-    }
-
-
-    /*--- Обработка поступившей команды ---*/
-
-    cmd_handle(connfd, buf, verbosity_level);
-
-
-    /*--- Завершение коммуникации с клиентом ---*/
-
-    finish_communication(sockfd, verbosity_level);
+    // Исполнение программы доходит досюда только в режиме одиночного прогона.
+    finish_communication(sockfd, 0);
 
     return 0;
 }
@@ -188,20 +200,26 @@ int32_t main(int32_t argc, char *argv[])
 void opt_handle(int32_t argc, char *argv[],
                 int32_t *port,
                 char *password, size_t password_buf_size,
+                bool *oneshot_mode,
                 uint32_t *verbosity_level)
 {
     int32_t opt = 0;
-    while ((opt = getopt(argc, argv, "p:P:vVh")) >= 0) {
+    while ((opt = getopt(argc, argv, "p:P:ovVh")) >= 0) {
         switch (opt) {
             // Обязательная опция, принимает номер порта в качестве аргумента.
             case 'p':
                 *port = strtol(optarg, NULL, 10);
                 break;
 
+            // Обязательная опция, принимает строку с паролем в качестве аргумента.
             case 'P':
                 if (strlen(optarg) < password_buf_size) {
                     sscanf(optarg, "%s", password);
                 }
+                break;
+
+            case 'o':
+                *oneshot_mode = 1;
                 break;
 
             case 'v':
@@ -237,10 +255,10 @@ void timestamp_print()
     printf("%s", buf);
 }
 
-void finish_communication(int32_t sockfd, uint32_t verbosity_level)
+void finish_communication(int32_t fd, uint32_t verbosity_level)
 {
-    sockets_close(sockfd);
+    sockets_close(fd);
     if (verbosity_level > 0) {
-        printf("\nCommunication closed.\n");
+        printf("\nCommunication closed.\n------------------------------------------------------\n");
     }
 }

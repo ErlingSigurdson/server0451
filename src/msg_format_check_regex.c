@@ -16,7 +16,7 @@
 // Из стандартной библиотеки языка Си.
 #include <stdio.h>
 #include <inttypes.h>
-//#include <stdbool.h>
+#include <stdbool.h>
 #include <string.h>
 //#include <stdlib.h>
 //#include <errno.h>
@@ -41,12 +41,14 @@ uint32_t msg_format_check_regex(char *buf, const char *regex_pattern)
     size_t nmatch = 1;
     regmatch_t pmatch[1] = {0};
 
-    if (regexec(&regex_ptr, buf, nmatch, pmatch, 0) != 0) {
+    bool match_result = regexec(&regex_ptr, buf, nmatch, pmatch, 0);
+    regfree(&regex_ptr);
+
+    if (match_result != 0) {
         return MSG_FORMAT_NO_MATCH;
     }
 
     uint32_t msg_len = strlen(buf);
-
     uint32_t offset_end = pmatch[0].rm_eo;
     buf[offset_end] = '\0';  // Обрезаем остаток строки.
     uint32_t match_len = strlen(buf);
