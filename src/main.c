@@ -147,6 +147,7 @@ int32_t main(int32_t argc, char *argv[])
             printf("\nMessage format check failed: error compiling regex.\n");
             strcpy(buf, "Message format check failed: error compiling regex.");
             sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
+            finish_communication(connfd, verbosity_level);
             finish_communication(sockfd, verbosity_level);
             exit(1);
             break;
@@ -154,6 +155,7 @@ int32_t main(int32_t argc, char *argv[])
             printf("\nMessage format check failed: no match found.\n");
             strcpy(buf, "Message format check failed: no match found.");
             sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
+            finish_communication(connfd, verbosity_level);
             finish_communication(sockfd, verbosity_level);
             exit(1);
             break;
@@ -161,6 +163,7 @@ int32_t main(int32_t argc, char *argv[])
             printf("\nMessage format check failed: partial match.\n");
             strcpy(buf, "Message format check failed: partial match.");
             sockets_write_message(connfd, buf, 0);  // verbosity_level overridden.
+            finish_communication(connfd, verbosity_level);
             finish_communication(sockfd, verbosity_level);
             exit(1);
             break;
