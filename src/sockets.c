@@ -173,6 +173,7 @@ void sockets_write_message(int32_t connfd, char *buf, uint32_t verbosity_level)
 
 void sockets_close(int32_t fd)
 {
-    shutdown(fd, SHUT_RDWR);  // Вроде бы не обязательно, но иногда рекомендуется.
-    close(fd);
+    while (close(fd) != 0) {
+        // Ждём, пока сокет не закроется.
+    }
 }

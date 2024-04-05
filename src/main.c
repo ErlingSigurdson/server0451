@@ -184,7 +184,7 @@ int32_t main(int32_t argc, char *argv[])
     /*--- Завершение коммуникации с клиентом ---*/
 
     finish_communication(connfd, verbosity_level);
-    finish_communication(sockfd, 0);
+    //finish_communication(sockfd, 0);
 
     return 0;
 }
