@@ -163,6 +163,7 @@ int main(int32_t argc, char *argv[])
 
     // Закрытие сокета.
     //shutdown(sockfd, SHUT_RDWR);  // Вроде бы не нужно, но иногда упоминается.
+    close(connfd);
     close(sockfd);
 
     return 0;
