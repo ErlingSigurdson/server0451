@@ -161,10 +161,9 @@ int main(int32_t argc, char *argv[])
     // Вызываем функцию-обработчик поступивших команд.
     cmd_handler(connfd, cmd_config_file_name, verbosity_level);
 
-    // Закрытие сокета.
-    //shutdown(sockfd, SHUT_RDWR);  // Вроде бы не нужно, но иногда упоминается.
-    close(connfd);
-    close(sockfd);
+    // Закрытие сокетов.
+    while (close(connfd) != 0);
+    while (close(sockfd) != 0);
 
     return 0;
 }
