@@ -19,7 +19,7 @@ MAX_LOG_SIZE=50000000
 
 ### Проверка на наличие исполняемого бинарного файла в соответствующей директории.
 if [ ! -e "$EXEC_BIN_FILE_PATH" ]; then
-    echo "Binary executable file is unavailable. Go to /server0451/src directory and run 'make' utility."
+    echo "Binary executable file is unavailable. Go to /server0451/src directory and run \"make\" utility."
     exit;
 fi
 
