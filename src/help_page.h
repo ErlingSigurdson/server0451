@@ -46,13 +46,13 @@ puts("");                                                                       
 puts("");                                                                                                      \
 puts("/*--- QUICK START GUIDE ---*/");                                                                         \
 puts("");                                                                                                      \
-puts("Open /server0451/src directory and run make command to build an executable binary file.");               \
+puts("Open /server0451/src directory and run \"make\" utility to build an executable binary file.");           \
 puts("");                                                                                                      \
-puts("Specify a port to be used in /server0451/.config/port_config_server0451.");                              \
-puts("");                                                                                                      \
-puts("Specify a password in /server0451/.config/password_config_server0451. Default password is \"admin\".");  \
+puts("Specify a password in /server0451/.config/config_server0451. Default password is \"admin\".");           \
 puts("Password must consist of 5 to 40 alphanumeric characters. If password is not specified, you will");      \
 puts("have an opportunity to insert it from the console.");                                                    \
+puts("");                                                                                                      \
+puts("Specify a port to be used in /server0451/.config/config_server0451. Default port is 451.");              \
 puts("");                                                                                                      \
 puts("Run /server0451/server0451.sh shell script. Choose between a full-fledged (l)oop mode and");             \
 puts("a test (o)neshot mode. Don't worry about closing your console or ssh session after the server");         \
