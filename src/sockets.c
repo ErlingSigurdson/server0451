@@ -74,7 +74,7 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
                                               (socklen_t)sizeof(so_reuseport));
 
         if (verbosity_level > 1) {
-            printf("...setting SO_REUSEADDR socket option, returned value: %d. ", socket_option_a);
+            printf("...setting SO_REUSEPORT socket option, returned value: %d. ", socket_option_a);
             printf("Status or error description: %s\n", strerror(errno));
         }
     #endif
@@ -104,7 +104,7 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
          */
         struct linger so_linger;
         so_linger.l_onoff = 1;
-        so_linger.l_linger = 0;
+        so_linger.l_linger = L_LINGER;
         int32_t socket_option_c = setsockopt(*sockfd,
                                              SOL_SOCKET,
                                              SO_LINGER,
