@@ -35,7 +35,7 @@ puts("Server acts as a broker between clients-posters which push simple ON/OFF c
 puts("files (\"topics\"), and clients-subscribers which request such commands from respective topics.");       \
 puts("");                                                                                                      \
 puts("Any device capable of TCP/IP messaging can be a client, but the role of clients-subscribers");           \
-puts("is suggested for IoT devices which control simple ON/OFF loads like LEDs, relays, etc.");                \
+puts("is primarily suggested for IoT devices which control simple ON/OFF loads like LEDs, relays, etc.");      \
 puts("");                                                                                                      \
 puts("Topics are stored in /server0451/.topics directory. Initially they are absent - server creates");        \
 puts("a topic upon reception of a first valid message referring to it. There can be up to 100 topics,");       \
@@ -48,8 +48,7 @@ puts("/*--- QUICK START GUIDE ---*/");                                          
 puts("");                                                                                                      \
 puts("Open /server0451/src directory and run make command to build an executable binary file.");               \
 puts("");                                                                                                      \
-puts("Specify ports (server uses 2 ports simultaneously - one for subscribers and another one for posters)");  \
-puts("in /server0451/.config/port_config_server0451.");                                                        \
+puts("Specify a port to be used in /server0451/.config/port_config_server0451.");                              \
 puts("");                                                                                                      \
 puts("Specify a password in /server0451/.config/password_config_server0451. Default password is \"admin\".");  \
 puts("Password must consist of 5 to 40 alphanumeric characters. If password is not specified, you will");      \
@@ -67,9 +66,6 @@ puts("    password     - is a password you've specified before.");              
 puts("    X            - is an integer value from 1 to 100.");                                                 \
 puts("    command_text - is one of the commands listed in config_general.h: AT+SETLOAD=ON,");                  \
 puts("                   AT+SETLOAD=OFF, AT+SETLOAD=TOGGLE, AT+SERVETOPIC.");                                  \
-puts("");                                                                                                      \
-puts("Shell script runs two instances of the server simultaneously, using one of two specified ports");        \
-puts("for each. First port is suggested for clients-posters, second one - for clients-subscribers.");          \
 puts("");                                                                                                      \
 puts("Server logs are stored in /server0451/.log/log_server0451.");                                            \
 puts("");                                                                                                      \

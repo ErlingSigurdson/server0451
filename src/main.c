@@ -24,7 +24,6 @@
 
 // Из библиотек POSIX.
 #include <unistd.h>
-#include <time.h>
 
 // Настройки проекта.
 #include "config_general.h"
@@ -33,6 +32,7 @@
 #include "sockets.h"
 #include "cmd.h"
 #include "msg_format_check_regex.h"
+#include "timestamp.h"
 #include "help_page.h"
 
 
@@ -44,9 +44,6 @@ void opt_handle(int32_t argc, char *argv[],
                 char *password, size_t password_buf_size,
                 bool *oneshot_mode, 
                 uint32_t *verbosity_level);
-
-// Вывод в консоль текущей даты и времени (UTC+0) в человекочитаемом формате.
-void timestamp_print();
 
 // Завершение связи с клиентом.
 void finish_communication(int32_t fd, uint32_t verbosity_level);
@@ -83,7 +80,7 @@ int32_t main(int32_t argc, char *argv[])
         printf("\n\n* * * * * * * * * * * * * * * * * * * * * * * * * *\n");
         printf("              Starting TCP IoT server\n");
         printf("Port %u, ", port);
-        timestamp_print(port);
+        timestamp_print();
         printf("\n* * * * * * * * * * * * * * * * * * * * * * * * * *\n");
     }
 
@@ -240,19 +237,6 @@ void opt_handle(int32_t argc, char *argv[],
                 break;
         }
     }
-}
-
-void timestamp_print()
-{
-    char buf[STR_MAX_LEN + 1] = {0};
-    time_t posix_time;
-    struct tm *time_fields;
-
-    posix_time = time(NULL);
-    time_fields = localtime(&posix_time);
-
-    strftime(buf, sizeof(buf), "date: %d.%m.%Y, time (UTC+0): %H:%M:%S", time_fields);
-    printf("%s", buf);
 }
 
 void finish_communication(int32_t fd, uint32_t verbosity_level)

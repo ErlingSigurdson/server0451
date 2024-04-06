@@ -38,6 +38,7 @@
 // Локальные модули.
 #include "sockets.h"
 #include "utilities.h"
+#include "timestamp.h"
 
 
 /******************** ФУНКЦИИ *******************/
@@ -61,41 +62,41 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
      */
 
     #ifdef SOCKOPT_SO_REUSEADDR
-    /* Разрешение заново использовать IP-адрес
-     * немедленно после закрытия предыдущего соединения.
-     * Если это делается, то обязательно до вызова bind().
-     */
-    int32_t so_reuseaddr = 1;
-    int32_t socket_option_a = setsockopt(*sockfd,
-                                          SOL_SOCKET,
-                                          SO_REUSEADDR,
-                                          &so_reuseaddr,
-                                          (socklen_t)sizeof(so_reuseaddr));
+        /* Разрешение заново использовать IP-адрес
+         * немедленно после закрытия предыдущего соединения.
+         * Если это делается, то обязательно до вызова bind().
+         */
+        int32_t so_reuseaddr = 1;
+        int32_t socket_option_a = setsockopt(*sockfd,
+                                              SOL_SOCKET,
+                                              SO_REUSEADDR,
+                                              &so_reuseaddr,
+                                              (socklen_t)sizeof(so_reuseaddr));
 
-    if (verbosity_level > 1) {
-        printf("...setting SO_REUSEADDR socket option, returned value: %d. ", socket_option_a);
-        printf("Status or error description: %s\n", strerror(errno));
-    }
+        if (verbosity_level > 1) {
+            printf("...setting SO_REUSEADDR socket option, returned value: %d. ", socket_option_a);
+            printf("Status or error description: %s\n", strerror(errno));
+        }
     #endif
 
     #ifdef SOCKOPT_SO_LINGER
-    /* Разрешение закрывать сокет, не дожидаясь обычного завершения
-     * процедуры передачи данных.
-     * Если это делается, то обязательно до вызова bind().
-     */
-    struct linger so_linger;
-    so_linger.l_onoff = 1;
-    so_linger.l_linger = 0;
-    int32_t socket_option_b = setsockopt(*sockfd,
-                                         SOL_SOCKET,
-                                         SO_LINGER,
-                                         &so_linger,
-                                         (socklen_t)sizeof(so_linger));
+        /* Разрешение закрывать сокет, не дожидаясь обычного завершения
+         * процедуры передачи данных.
+         * Если это делается, то обязательно до вызова bind().
+         */
+        struct linger so_linger;
+        so_linger.l_onoff = 1;
+        so_linger.l_linger = 0;
+        int32_t socket_option_b = setsockopt(*sockfd,
+                                             SOL_SOCKET,
+                                             SO_LINGER,
+                                             &so_linger,
+                                             (socklen_t)sizeof(so_linger));
 
-    if (verbosity_level > 1) {
-        printf("...clearing SO_LINGER socket option, returned value: %d. ", socket_option_b);
-        printf("Status or error description: %s\n", strerror(errno));
-    }
+        if (verbosity_level > 1) {
+            printf("...clearing SO_LINGER socket option, returned value: %d. ", socket_option_b);
+            printf("Status or error description: %s\n", strerror(errno));
+        }
     #endif
 
 
@@ -141,7 +142,9 @@ uint32_t sockets_set_connection(int32_t sockfd, int32_t *connfd, int32_t port, u
     if (*connfd < 0) {
         return SOCKET_ERR_ACCEPT;
     } else if (verbosity_level > 0) {
-        printf("\nServer accepted a client at port %d. Starting communication.\n", port);
+        printf("\nServer accepted a client at port %d, ", port);
+        timestamp_print();
+        printf(". Starting communication.\n");
     }
 
     return SOCKET_OK;
@@ -175,6 +178,7 @@ void sockets_write_message(int32_t connfd, char *buf, uint32_t verbosity_level)
 
 void sockets_close(int32_t fd)
 {
-    shutdown(fd, SHUT_RDWR);  // Вроде бы не обязательно, но иногда рекомендуется.
-    close(fd);
+    while (close(fd) != 0) {
+        // Ждём, пока закроется сокет.
+    }
 }
