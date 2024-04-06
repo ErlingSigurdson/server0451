@@ -61,20 +61,38 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
      * приведённых в файле config_general.h.
      */
 
+    #ifdef SOCKOPT_SO_REUSEPORT
+        /* Разрешение заново использовать сочетание порта и адреса
+         * немедленно после закрытия предыдущего соединения.
+         * Если это делается, то обязательно до вызова bind().
+         */
+        int32_t so_reuseport = 1;
+        int32_t socket_option_a = setsockopt(*sockfd,
+                                              SOL_SOCKET,
+                                              SO_REUSEPORT,
+                                              &so_reuseport,
+                                              (socklen_t)sizeof(so_reuseport));
+
+        if (verbosity_level > 1) {
+            printf("...setting SO_REUSEADDR socket option, returned value: %d. ", socket_option_a);
+            printf("Status or error description: %s\n", strerror(errno));
+        }
+    #endif
+
     #ifdef SOCKOPT_SO_REUSEADDR
-        /* Разрешение заново использовать IP-адрес
+        /* Разрешение заново использовать адрес
          * немедленно после закрытия предыдущего соединения.
          * Если это делается, то обязательно до вызова bind().
          */
         int32_t so_reuseaddr = 1;
-        int32_t socket_option_a = setsockopt(*sockfd,
+        int32_t socket_option_b = setsockopt(*sockfd,
                                               SOL_SOCKET,
                                               SO_REUSEADDR,
                                               &so_reuseaddr,
                                               (socklen_t)sizeof(so_reuseaddr));
 
         if (verbosity_level > 1) {
-            printf("...setting SO_REUSEADDR socket option, returned value: %d. ", socket_option_a);
+            printf("...setting SO_REUSEADDR socket option, returned value: %d. ", socket_option_b);
             printf("Status or error description: %s\n", strerror(errno));
         }
     #endif
@@ -87,14 +105,14 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
         struct linger so_linger;
         so_linger.l_onoff = 1;
         so_linger.l_linger = 0;
-        int32_t socket_option_b = setsockopt(*sockfd,
+        int32_t socket_option_c = setsockopt(*sockfd,
                                              SOL_SOCKET,
                                              SO_LINGER,
                                              &so_linger,
                                              (socklen_t)sizeof(so_linger));
 
         if (verbosity_level > 1) {
-            printf("...clearing SO_LINGER socket option, returned value: %d. ", socket_option_b);
+            printf("...clearing SO_LINGER socket option, returned value: %d. ", socket_option_c);
             printf("Status or error description: %s\n", strerror(errno));
         }
     #endif

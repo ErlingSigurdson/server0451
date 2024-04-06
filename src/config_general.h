@@ -36,6 +36,7 @@
 #define CMD_TOPIC_REQUEST  "AT+SERVETOPIC"
 
 // Директивы управления условной компиляцией кода, устанавливающего опции сокетов.
+#define SOCKOPT_SO_REUSEPORT
 #define SOCKOPT_SO_REUSEADDR
 //#define SOCKOPT_SO_LINGER
 
