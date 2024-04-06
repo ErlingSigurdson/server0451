@@ -8,7 +8,7 @@ THIS_SCRIPT_DIR_ABS_PATH=$(dirname "$THIS_SCRIPT_FILE_ABS_PATH")
 EXEC_BIN_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/bin/execute_server0451"
 
 CONFIG_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/.config/config_server0451"
-PASSWORD=$(grep -E -o "PASSWORD={5,40}" "$CONFIG_FILE_PATH" | grep -E -o "[0-9]+")
+PASSWORD=$(grep -E -o "PASSWORD=.{5,40}" "$CONFIG_FILE_PATH" | grep -E -o "=.+" | grep -E -o "[a-zA-Z0-9]+")
 PORT=$(grep -E -o "PORT=[0-9]+" "$CONFIG_FILE_PATH" | grep -E -o "[0-9]+")
 
 LOG_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/.log/log_server0451"
