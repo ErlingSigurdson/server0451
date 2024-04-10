@@ -112,7 +112,7 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
                    (socklen_t)sizeof(so_linger));
 
         if (verbosity_level > 1) {
-            printf("...clearing SO_LINGER socket option, timeout %d sec. ", L_LINGER);
+            printf("...setting SO_LINGER socket option, timeout %d sec. ", L_LINGER);
             printf("Status: %s\n", strerror(errno));
         }
     #endif
