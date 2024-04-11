@@ -41,7 +41,7 @@
 #define SOCKET_OK         0
 
 // Второй аргумент для передачи в функцию listen().
-#define SOCKET_BACKLOG    128
+#define SOCKET_BACKLOG    1024
 
 
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/

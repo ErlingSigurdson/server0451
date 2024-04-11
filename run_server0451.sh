@@ -37,29 +37,29 @@ MAX_LOG_SIZE=50000000
 
 ## Проверка на наличие исполняемого бинарного файла в соответствующей директории.
 if [ ! -e "$EXEC_BIN_FILE_PATH" ]; then
-    echo "Executable binary file of server0451 not found. \
-    Please follow to $THIS_SCRIPT_DIR_ABS_PATH/src and run make utility."
+    echo -e "Executable binary file of server0451 not found."
+    echo -e "Please follow to $THIS_SCRIPT_DIR_ABS_PATH/src and run make utility."
     exit
 fi
 
 ## Проверка заданного в настроечном файле порта.
 if [ -z "$PORT" ]; then
-    echo -e "Valid port for server0451 is not specified in the config file. \
-    Please edit $CONFIG_FILE_PATH and specify a port (an integer from 0 to 65535)."
+    echo -e "Valid port for server0451 is not specified in the config file."
+    echo -e "Please edit $CONFIG_FILE_PATH and specify a port (an integer from 0 to 65535)."
     exit
 fi
 
 ## Проверка заданного в настроечном файле пароля.
 if [ -z "$PASSWORD" ]; then
-    echo -e "Valid password for server0451 is not specified in the config file. \
-    Please edit $CONFIG_FILE_PATH and specify a password (a string of 5 to 40 ASCII alphanumerics)."
+    echo -e "Valid password for server0451 is not specified in the config file."
+    echo -e "Please edit $CONFIG_FILE_PATH and specify a password (a string of 5 to 40 ASCII alphanumerics)."
     exit
 fi
 
 ## Проверка заданного в настроечном файле режима.
 if [ "$MODE" != "$VALID_MODE_1" ] && [ "$MODE" != "$VALID_MODE_2" ] ; then
-    echo -e "Valid operation mode for server0451 is not specified in the config file. \
-    Please edit $CONFIG_FILE_PATH and specify a mode (valid options are \"loop\" and \"oneshot\")."
+    echo -e "Valid operation mode for server0451 is not specified in the config file."
+    echo -e "Please edit $CONFIG_FILE_PATH and specify a mode (valid options are \"loop\" and \"oneshot\")."
     exit
 fi
 
