@@ -243,6 +243,6 @@ void finish_communication(int32_t fd, uint32_t verbosity_level)
 {
     sockets_close(fd);
     if (verbosity_level > 0) {
-        printf("\nCommunication closed.\n------------------------------------------------------\n");
+        printf("\nCommunication closed.\n---------------------------------------------------\n");
     }
 }
