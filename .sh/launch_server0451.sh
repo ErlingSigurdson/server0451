@@ -93,5 +93,5 @@ fi
 
 ## Очистка логов сервера.
 if [ "$MODE" = "loop" ]; then
-    nohup $LOG_CONTROL_SCRIPT_FILE_PATH $LOG_FILE_MAX_SIZE > /dev/null 2>&1 &
-done &
+    nohup sudo $LOG_FLUSH_SCRIPT_FILE_PATH $LOG_FILE_MAX_SIZE > /dev/null 2>&1 &
+fi

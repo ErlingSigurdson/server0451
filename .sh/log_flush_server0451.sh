@@ -27,7 +27,9 @@ LOG_FILE_MAX_SIZE=$1
 ## Очистка логов сервера.
 while true; do
     LOG_FILE_SIZE=$(stat "$LOG_FILE_PATH" | grep -E -o "Size: [0-9]+" | grep -E -o "[0-9]+")
-    if [ "$LOG_FILE_SIZE" -ge "$LOG_FILE_MAX_SIZE" ]; then
-        date +"Creating a new server log file, date: %d.%m.%Y, time (UTC+0): %H:%M:%S" >> $LOG_FILE_PATH
+    if [ $LOG_FILE_SIZE -ge $LOG_FILE_MAX_SIZE ]; then
+        echo "-----------------------------------------------------------------------" > $LOG_FILE_PATH
+        date +"Server log file flushed, date: %d.%m.%Y, time (UTC+0): %H:%M:%S" >> $LOG_FILE_PATH
+        echo "-----------------------------------------------------------------------" >> $LOG_FILE_PATH
     fi
 done &
