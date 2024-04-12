@@ -5,7 +5,7 @@
 #--- Названия файлов ---#
 
 MAIN_SCRIPT_FILE_NAME=run_server0451.sh
-TRACE_FILE_NAME=trace_log_server0451
+TRACE_FILE_NAME=log_trace_server0451
 
 
 #--- Пути к файлам ---#
@@ -42,6 +42,7 @@ RESTART_DUE=0
 while true; do
     CLOSE_WAIT_DETECTED=$(sudo ss -tapn | grep -E -c "CLOSE-WAIT")
     SERVER_IS_RUNNING=$(pgrep -f -c "$PATTERN_1")
+    MAIN_SCRIPT_IS_RUNNING=$(pgrep -f -c "$PATTERN_2")
     
     if [ $CLOSE_WAIT_DETECTED -gt $CLOSE_WAIT_THRESHOLD ]; then
         sudo pkill -f "$PATTERN_1"
@@ -49,9 +50,9 @@ while true; do
         RESTART_DUE=1
     fi
 
-    if [ $SERVER_IS_RUNNING -le 0 ] && [ $RESTART_DUE -gt 0 ]; then
+    if [ $SERVER_IS_RUNNING -le 0 ] && [ $MAIN_SCRIPT_IS_RUNNING -le 0 ] && [ $RESTART_DUE -gt 0 ]; then
         $MAIN_SCRIPT_FILE_PATH &
-        date +"server0451 restarted due to CLOSE-WAIT clogging, %H:%M:%S %d.%m.%Y" >> $TRACE_FILE_PATH
+        date +"server0451 restarted due to CLOSE-WAIT clogging, date: %d.%m.%Y, time (UTC+0): %H:%M:%S" >> $TRACE_FILE_PATH
         RESTART_DUE=0
     fi
     
