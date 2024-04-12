@@ -77,11 +77,11 @@ int32_t main(int32_t argc, char *argv[])
     }
 
     if (verbosity_level > 0) {
-        printf("\n\n* * * * * * * * * * * * * * * * * * * * * * * * * *\n");
-        printf("              Starting TCP IoT server\n");
-        printf("Port %u, ", port);
+        printf("\n\n* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
+        printf("                        Starting TCP IoT server\n");
+        printf("Server started at port %u, ", port);
         timestamp_print();
-        printf("\n* * * * * * * * * * * * * * * * * * * * * * * * * *\n");
+        printf("\n* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
     }
 
 
@@ -243,6 +243,6 @@ void finish_communication(int32_t fd, uint32_t verbosity_level)
 {
     sockets_close(fd);
     if (verbosity_level > 0) {
-        printf("\nCommunication closed.\n---------------------------------------------------\n");
+        printf("\nCommunication closed.\n-----------------------------------------------------------------------\n");
     }
 }
