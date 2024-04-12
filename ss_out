@@ -1,0 +1,11 @@
+Date: 12.04.2024, time (UTC+0): 11:25:18
+State  Recv-Q Send-Q Local Address:Port     Peer Address:PortProcess                                                     
+LISTEN 0      4096   127.0.0.53%lo:domain        0.0.0.0:*    users:(("systemd-resolve",pid=597,fd=14))                  
+LISTEN 0      128          0.0.0.0:ssh           0.0.0.0:*    users:(("sshd",pid=738,fd=3))                              
+ESTAB  0      0        10.128.0.16:ssh    46.188.123.173:1794 users:(("sshd",pid=2311773,fd=4),("sshd",pid=2307829,fd=4))
+ESTAB  0      0        10.128.0.16:ssh    46.188.123.173:3529 users:(("sshd",pid=1568324,fd=4),("sshd",pid=1563276,fd=4))
+ESTAB  0      0        10.128.0.16:ssh    46.188.123.173:1512 users:(("sshd",pid=2593267,fd=4),("sshd",pid=2593210,fd=4))
+ESTAB  0      0        10.128.0.16:ssh    46.188.123.173:1838 users:(("sshd",pid=2122152,fd=4),("sshd",pid=2117201,fd=4))
+ESTAB  0      0        10.128.0.16:ssh    46.188.123.173:1850 users:(("sshd",pid=2593170,fd=4),("sshd",pid=2593113,fd=4))
+ESTAB  0      0        10.128.0.16:ssh    46.188.123.173:1837 users:(("sshd",pid=2593067,fd=4),("sshd",pid=2592988,fd=4))
+LISTEN 0      128             [::]:ssh              [::]:*    users:(("sshd",pid=738,fd=4))                              
