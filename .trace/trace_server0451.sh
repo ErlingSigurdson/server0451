@@ -4,8 +4,8 @@
 
 #--- Названия файлов ---#
 
+LOG_FILE_NAME=log_server0451
 MAIN_SCRIPT_FILE_NAME=run_server0451.sh
-TRACE_FILE_NAME=log_trace_server0451
 
 
 #--- Пути к файлам ---#
@@ -13,8 +13,8 @@ TRACE_FILE_NAME=log_trace_server0451
 THIS_SCRIPT_FILE_ABS_PATH=$(readlink -f "$0")
 THIS_SCRIPT_DIR_ABS_PATH=$(dirname "$THIS_SCRIPT_FILE_ABS_PATH")
 
+LOG_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/../.log/$LOG_FILE_NAME"
 MAIN_SCRIPT_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/../$MAIN_SCRIPT_FILE_NAME"
-TRACE_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/$TRACE_FILE_NAME"
 
 
 #--- Прочее ---#
@@ -41,8 +41,8 @@ RESTART_DUE=0
 
 while true; do
     CLOSE_WAIT_DETECTED=$(sudo ss -tapn | grep -E -c "CLOSE-WAIT")
-    SERVER_IS_RUNNING=$(pgrep -f -c "$PATTERN_1")
-    MAIN_SCRIPT_IS_RUNNING=$(pgrep -f -c "$PATTERN_2")
+    SERVER_IS_RUNNING=$(pgrep -fc "$PATTERN_1")
+    MAIN_SCRIPT_IS_RUNNING=$(pgrep -fc "$PATTERN_2")
     
     if [ $CLOSE_WAIT_DETECTED -gt $CLOSE_WAIT_THRESHOLD ]; then
         sudo pkill -f "$PATTERN_1"
@@ -52,7 +52,7 @@ while true; do
 
     if [ $SERVER_IS_RUNNING -le 0 ] && [ $MAIN_SCRIPT_IS_RUNNING -le 0 ] && [ $RESTART_DUE -gt 0 ]; then
         $MAIN_SCRIPT_FILE_PATH &
-        date +"server0451 restarted due to CLOSE-WAIT clogging, date: %d.%m.%Y, time (UTC+0): %H:%M:%S" >> $TRACE_FILE_PATH
+        date +"server0451 restarted due to CLOSE-WAIT clogging, date: %d.%m.%Y, time (UTC+0): %H:%M:%S" >> $LOG_FILE_PATH
         RESTART_DUE=0
     fi
     

@@ -7,6 +7,7 @@
 EXEC_BIN_FILE_NAME=exec_bin_server0451
 CONFIG_FILE_NAME=config_server0451
 LOG_FILE_NAME=log_server0451
+TRACE_SCRIPT_FILE_NAME=trace_server0451.sh
 
 
 #--- Пути к файлам ---#
@@ -14,9 +15,10 @@ LOG_FILE_NAME=log_server0451
 THIS_SCRIPT_FILE_ABS_PATH=$(readlink -f "$0")
 THIS_SCRIPT_DIR_ABS_PATH=$(dirname "$THIS_SCRIPT_FILE_ABS_PATH")
 
-EXEC_BIN_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/bin/$EXEC_BIN_FILE_NAME"
+EXEC_BIN_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/.bin/$EXEC_BIN_FILE_NAME"
 CONFIG_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/.config/$CONFIG_FILE_NAME"
 LOG_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/.log/$LOG_FILE_NAME"
+TRACE_SCRIPT_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/.trace/$TRACE_SCRIPT_FILE_NAME"
 
 
 #--- Прочее ---#
@@ -24,11 +26,15 @@ LOG_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/.log/$LOG_FILE_NAME"
 PORT=$(grep -E -o "PORT=[0-9]+" "$CONFIG_FILE_PATH" | grep -E -o "[0-9]+")
 PASSWORD=$(grep -E -o "PASSWORD=.{5,40}" "$CONFIG_FILE_PATH" | grep -E -o "=.+" | grep -E -o "[a-zA-Z0-9]+")
 MODE=$(grep -E -o "MODE=[a-zA-Z]+" "$CONFIG_FILE_PATH" | grep -E -o "=.+" | grep -E -o "[a-zA-Z]+")
+TRACE=$(grep -E -o "TRACE=[a-zA-Z]+" "$CONFIG_FILE_PATH" | grep -E -o "=.+" | grep -E -o "[a-zA-Z]+")
 
 VALID_MODE_1=loop
 VALID_MODE_2=oneshot
 
-MAX_LOG_SIZE=50000000
+VALID_TRACE_1=on
+VALID_TRACE_2=off
+
+MAX_LOG_SIZE=100000000
 
 
 #************ ОСНОВНАЯ ЧАСТЬ СКРИПТА ************#
@@ -56,10 +62,17 @@ if [ -z "$PASSWORD" ]; then
     exit
 fi
 
-## Проверка заданного в настроечном файле режима.
+## Проверка заданного в настроечном файле режима запуска сервера.
 if [ "$MODE" != "$VALID_MODE_1" ] && [ "$MODE" != "$VALID_MODE_2" ] ; then
     echo -e "Valid operation mode for server0451 is not specified in the config file."
     echo -e "Please edit $CONFIG_FILE_PATH and specify a mode (valid options are \"loop\" and \"oneshot\")."
+    exit
+fi
+
+## Проверка заданного в настроечном файле статуса опции отслеживания состояния и автоматического перезапуска сервера.
+if [ "$TRACE" != "$VALID_TRACE_1" ] && [ "$TRACE" != "$VALID_TRACE_2" ] ; then
+    echo -e "Valid trace option status for server0451 is not specified in the config file."
+    echo -e "Please edit $CONFIG_FILE_PATH and specify a status (valid options are \"on\" and \"off\")."
     exit
 fi
 
@@ -83,10 +96,13 @@ if [ "$MODE" = "oneshot" ]; then
     sudo $EXEC_BIN_FILE_PATH -p $PORT -P $PASSWORD -o -V
 fi
 
+## Запуск скрипта отслеживания состояния и автоматического перезапуска сервера.
+nohup $TRACE_SCRIPT_FILE_PATH > /dev/null 2>&1 &
+
 ## Хранение и удаление логов сервера.
 while [ "$MODE" = "loop" ]; do
     LOG_SIZE=$(stat "$LOG_FILE_PATH" | grep -E -o "Size: [0-9]+" | grep -E -o "[0-9]+")
     if [ "$LOG_SIZE" -ge "$MAX_LOG_SIZE" ]; then
-        echo "Creating a new server log file." > $LOG_FILE_PATH
+        date +"Creating a new server log file, date: %d.%m.%Y, time (UTC+0): %H:%M:%S" >> $LOG_FILE_PATH
     fi
 done &

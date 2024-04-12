@@ -1,3 +1,10 @@
+# Формат:
+# PORT=<целое число от 1 до 65535>
+# PASSWORD=<от 5 до 40 английских букв и цифр>
+# MODE=<loop/oneshot>
+# TRACE=<on/off>
+
 PORT=451
 PASSWORD=admin
 MODE=loop
+TRACE=on
