@@ -241,8 +241,25 @@ void opt_handle(int32_t argc, char *argv[],
 
 void finish_communication(int32_t fd, uint32_t verbosity_level)
 {
-    sockets_close(fd);
-    if (verbosity_level > 0) {
-        printf("\nCommunication closed.\n-----------------------------------------------------------------------\n");
+    if (verbosity_level < 2) {
+        sockets_close(fd);
+        printf("\nCommunication closed.");
+        printf("\n-----------------------------------------------------------------------\n");
+        return;
     }
+
+    uint32_t i = 0;
+    for (; i <= GRACEFUL_SOCKET_CLOSE_ATTEMPTS; ++i) {
+        if (sockets_close(fd) != 0) {
+            fprintf(stderr,
+                    "\nError: failed closing socket on attempt %d of %d, status: %s\n",
+                    i, GRACEFUL_SOCKET_CLOSE_ATTEMPTS, strerror(errno));
+        } else {
+            printf("\nCommunication closed gracefully.");
+            printf("\n-----------------------------------------------------------------------\n");
+            return;
+        }
+    }
+    printf("\nCommunication closed ungracefully.");
+    printf("\n-----------------------------------------------------------------------\n");
 }
