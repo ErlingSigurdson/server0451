@@ -2,10 +2,10 @@
 
 /**
  * Имя файла: main.c
- * ----------------------------------------------------------------------------|---------------------------------------|
+ * --------------------------------------------------------------------------------|---------------------------------------|
  * Назначение: основной файл с исходным кодом простого TCP-сервера IoT
  * для Linux, написанным на языке Си.
- * ----------------------------------------------------------------------------|---------------------------------------|
+ * --------------------------------------------------------------------------------|---------------------------------------|
  * Примечания:
  */
 
@@ -241,25 +241,32 @@ void opt_handle(int32_t argc, char *argv[],
 
 void finish_communication(int32_t fd, uint32_t verbosity_level)
 {
-    if (verbosity_level < 2) {
-        sockets_close(fd);
-        printf("\nCommunication closed.");
-        printf("\n-----------------------------------------------------------------------\n");
+    if (verbosity_level <= 0) {
         return;
     }
 
+    if (verbosity_level == 1) {
+        sockets_close(fd);
+        printf("\nCommunication closed.");
+        printf("\n---------------------------------------------------------------------------\n");
+        return;
+    }
+
+    int32_t close_retval = -1;
     uint32_t i = 0;
     for (; i <= GRACEFUL_SOCKET_CLOSE_ATTEMPTS; ++i) {
-        if (sockets_close(fd) != 0) {
+        if ((close_retval = sockets_close(fd)) != 0) {
+            //printf("\nclose_retval is %d\n", close_retval);
             fprintf(stderr,
                     "\nError: failed closing socket on attempt %d of %d, status: %s\n",
                     i, GRACEFUL_SOCKET_CLOSE_ATTEMPTS, strerror(errno));
         } else {
+            //printf("\nclose_retval is %d\n", close_retval);
             printf("\nCommunication closed gracefully.");
-            printf("\n-----------------------------------------------------------------------\n");
+            printf("\n---------------------------------------------------------------------------\n");
             return;
         }
     }
     printf("\nCommunication closed ungracefully.");
-    printf("\n-----------------------------------------------------------------------\n");
+    printf("\n---------------------------------------------------------------------------\n");
 }

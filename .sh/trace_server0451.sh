@@ -52,9 +52,9 @@ while true; do
        [ $LOG_FLUSH_SCRIPT_IS_RUNNING -le 0 ] && [ $RUN_SCRIPT_IS_RUNNING -le 0 ] &&\
        [ $RESTART_DUE -gt 0 ]; then
         $LAUNCH_SCRIPT_FILE_PATH &
-        echo -e "-----------------------------------------------------------------------" >> $LOG_FILE_PATH
+        echo -e "---------------------------------------------------------------------------" >> $LOG_FILE_PATH
         date +"Restarting server due to CLOSE-WAIT clogging, date: %d.%m.%Y, time (UTC+0): %H:%M:%S" >> $LOG_FILE_PATH
-        echo -e "-----------------------------------------------------------------------" >> $LOG_FILE_PATH
+        echo -e "---------------------------------------------------------------------------" >> $LOG_FILE_PATH
         RESTART_DUE=0
     fi
     
