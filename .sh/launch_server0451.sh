@@ -7,7 +7,6 @@
 EXEC_BIN_FILE_NAME=exec_bin_server0451
 CONFIG_FILE_NAME=config_server0451
 LOG_FILE_NAME=log_server0451
-LOG_FLUSH_SCRIPT_FILE_NAME=log_flush_server0451.sh
 
 
 #--- Пути к файлам ---#
@@ -18,7 +17,6 @@ THIS_SCRIPT_DIR_ABS_PATH=$(dirname "$THIS_SCRIPT_FILE_ABS_PATH")
 EXEC_BIN_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/../.bin/$EXEC_BIN_FILE_NAME"
 CONFIG_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/../.config/$CONFIG_FILE_NAME"
 LOG_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/../.log/$LOG_FILE_NAME"
-LOG_FLUSH_SCRIPT_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/$LOG_FLUSH_SCRIPT_FILE_NAME"
 
 
 #--- Прочее ---#
@@ -26,13 +24,12 @@ LOG_FLUSH_SCRIPT_FILE_PATH="$THIS_SCRIPT_DIR_ABS_PATH/$LOG_FLUSH_SCRIPT_FILE_NAM
 PORT=$(grep -E -o "PORT=[0-9]+" "$CONFIG_FILE_PATH" | grep -E -o "[0-9]+")
 PASSWORD=$(grep -E -o "PASSWORD=.{5,40}" "$CONFIG_FILE_PATH" | grep -E -o "=.+" | grep -E -o "[a-zA-Z0-9]+")
 MODE=$(grep -E -o "MODE=[a-zA-Z]+" "$CONFIG_FILE_PATH" | grep -E -o "=.+" | grep -E -o "[a-zA-Z]+")
-LOG_FILE_MAX_SIZE=$(grep -E -o "LOG_FILE_MAX_SIZE=[0-9]+" "$CONFIG_FILE_PATH" | grep -E -o "[0-9]+")
 
 VALID_MODE_1=loop
 VALID_MODE_2=oneshot
 
 
-#************ ОСНОВНАЯ ЧАСТЬ СКРИПТА ************#
+#******************* ПРОЦЕДУРЫ ******************#
 
 #--- Проверки ---#
 
@@ -58,22 +55,17 @@ if [ -z "$PASSWORD" ]; then
 fi
 
 ## Проверка заданного в настроечном файле режима запуска сервера.
-if [ "$MODE" != "$VALID_MODE_1" ] && [ "$MODE" != "$VALID_MODE_2" ] ; then
+if [ "$MODE" != "$VALID_MODE_1" ] && [ "$MODE" != "$VALID_MODE_2" ]; then
     echo -e "Valid operation mode for server0451 is not specified in the config file."
     echo -e "Please edit $CONFIG_FILE_PATH and specify a mode (valid options are \"loop\" and \"oneshot\")."
     exit
 fi
 
-## Проверка заданного в настроечном файле максимального размера файла с логами сервера.
-if [ -z "$LOG_FILE_MAX_SIZE" ]; then
-    echo -e "Maximum log file size for server0451 is not specified in the config file."
-    echo -e "Please edit $CONFIG_FILE_PATH and specify maximum file size (an integer)."
-    exit
-fi
-
 ## Создание нового файла с логами сервера, если такой файл отсутствует.
 if [ ! -e "$LOG_FILE_PATH" ]; then
-    echo -e "Creating a new server log file." > $LOG_FILE_PATH
+        echo -e "-----------------------------------------------------------------------" > $LOG_FILE_PATH
+        date +"Creating a new server log file, date: %d.%m.%Y, time (UTC+0): %H:%M:%S" >> $LOG_FILE_PATH
+        echo -e "-----------------------------------------------------------------------" >> $LOG_FILE_PATH
 fi
 
 
@@ -89,9 +81,4 @@ fi
 if [ "$MODE" = "oneshot" ]; then
     echo "server0451 started in a oneshot mode at port $PORT."
     sudo $EXEC_BIN_FILE_PATH -p $PORT -P $PASSWORD -o -V
-fi
-
-## Очистка логов сервера.
-if [ "$MODE" = "loop" ]; then
-    nohup sudo $LOG_FLUSH_SCRIPT_FILE_PATH $LOG_FILE_MAX_SIZE > /dev/null 2>&1 &
 fi
