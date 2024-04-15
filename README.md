@@ -70,12 +70,12 @@ sudo execute_server0451 -p <номер_порта> -P <пароль> [-h][-v][-V
 
 Для просмотра соответствующих событий в логах удобно использовать следующие команды:
 ```
-grep -in "started" log_server0451
-grep -in "accepted" log_server0451
-grep -in "restarted" log_server0451
+grep -in "start" log_server0451
+grep -in "accept" log_server0451
+grep -in "restart" log_server0451
 ```
 
-### Мелкие лайфхаки
+### Небольшие лайфхаки
 
 Чтобы увидеть все относящиеся к серверу процессы, удобно использовать следующую команду:
 ```
