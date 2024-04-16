@@ -34,8 +34,10 @@
 #define SOCKET_ERR_BIND   2
 #define SOCKET_ERR_LISTEN 1
 
-// Значения, возвращаемые функцией sockets_set_connection() при ошибке.
-#define SOCKET_ERR_ACCEPT 1
+// Значения, возвращаемые функцией sockets_set_connection() при ошибке и при таймауте.
+#define SOCKET_ERR_ACCEPT 3
+#define SOCKET_ERR_SELECT 2
+#define SOCKET_TIMEOUT    1
 
 // Значение, возвращаемое при успешной отработке функции.
 #define SOCKET_OK         0
@@ -46,8 +48,8 @@
 
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/
 
-uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level);
-uint32_t sockets_set_connection(int32_t sockfd, int32_t *connfd, int32_t port, uint32_t verbosity_level);
+int32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level);
+int32_t sockets_set_connection(int32_t sockfd, int32_t *connfd, int32_t port, uint32_t verbosity_level);
 void sockets_read_message(int32_t connfd, char *buf, size_t buf_size, uint32_t verbosity_level);
 void sockets_write_message(int32_t connfd, char *buf, uint32_t verbosity_level);
 int32_t sockets_close(int32_t fd);

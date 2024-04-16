@@ -43,7 +43,7 @@
 
 /******************** ФУНКЦИИ *******************/
 
-uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
+int32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
 {
     /*--- Создание сокета ---*/
 
@@ -149,7 +149,7 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
     return SOCKET_OK;
 }
 
-uint32_t sockets_set_connection(int32_t sockfd, int32_t *connfd, int32_t port, uint32_t verbosity_level)
+int32_t sockets_set_connection(int32_t sockfd, int32_t *connfd, int32_t port, uint32_t verbosity_level)
 {
     int32_t socklen = 0;
     struct sockaddr_in clientaddr;
@@ -162,8 +162,24 @@ uint32_t sockets_set_connection(int32_t sockfd, int32_t *connfd, int32_t port, u
     } else if (verbosity_level > 0) {
         printf("\nServer accepted a client at port %d, ", port);
         timestamp_print();
-        printf(". Starting communication.\n");
+        printf(". Waiting for incoming data.\n");
     }
+
+    int32_t select_retval;
+    do {
+       struct timeval tv;
+       tv.tv_sec = 2;
+       tv.tv_usec = 0;
+           
+       fd_set readfds;
+       
+       FD_ZERO(&readfds);
+       FD_SET(*connfd, &readfds);
+       select_retval = select(*connfd+1, &readfds, NULL, NULL, &tv);
+
+       printf("\nDEBUG select_retval is %d.\n", select_retval);
+    }
+    while (select_retval <= 0);
 
     return SOCKET_OK;
 }

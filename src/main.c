@@ -115,13 +115,27 @@ int32_t main(int32_t argc, char *argv[])
 
     do {
         int32_t connfd = 0;
-        uint32_t set_connection_result = sockets_set_connection(sockfd, &connfd, port, verbosity_level);
+        int32_t set_connection_result = sockets_set_connection(sockfd, &connfd, port, verbosity_level);
         switch (set_connection_result) {
             case SOCKET_ERR_ACCEPT:
                 fprintf(stderr, "\nError: server failed to accept a client at port %d.\n", port);
                 fprintf(stderr, "Error description: %s\n", strerror(errno));
                 continue;
                 break;
+            /*
+            case SOCKET_ERR_SELECT:
+                fprintf(stderr, "\nError: select() call returned error.\n");
+                fprintf(stderr, "Error description: %s\n", strerror(errno));
+                printf("DEBUG select error.");
+                finish_communication(connfd, verbosity_level);
+                continue;
+                break;
+            case SOCKET_TIMEOUT:
+                printf("DEBUG select timeout.");
+                finish_communication(connfd, verbosity_level);
+                continue;
+                break;
+            */
             case SOCKET_OK:
                 // Установка связи с клиентом прошла успешно.
                 break;
@@ -130,11 +144,10 @@ int32_t main(int32_t argc, char *argv[])
                 break;
         }
 
-        // Получение сообщения от клиента.
         char buf[STR_MAX_LEN + 1] = {0};
         sockets_read_message(connfd, buf, sizeof(buf), verbosity_level);
 
-
+       
         /*--- Проверка формата сообщения от клиента ---*/
 
         char resulting_pattern[STR_MAX_LEN * 2 + 1] = {0};
