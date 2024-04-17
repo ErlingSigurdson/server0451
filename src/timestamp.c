@@ -40,6 +40,6 @@ void timestamp_print()
     posix_time = time(NULL);
     time_fields = localtime(&posix_time);
 
-    strftime(buf, sizeof(buf), "date: %d.%m.%Y, time (UTC+0): %H:%M:%S", time_fields);
+    strftime(buf, sizeof(buf), "Date: %d.%m.%Y, time (UTC+0): %H:%M:%S", time_fields);
     printf("%s", buf);
 }

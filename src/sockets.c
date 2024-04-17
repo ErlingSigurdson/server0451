@@ -43,15 +43,15 @@
 
 /******************** ФУНКЦИИ *******************/
 
-int32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
+int32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t numconn, uint32_t verbosity_level)
 {
     /*--- Создание сокета ---*/
 
     *sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (*sockfd < 0) {
-        return SOCKET_INIT_ERR_CREATE;
+        return SOCKETS_INIT_ERR_CREATE;
     } else if (verbosity_level > 0) {
-        printf("\n...socket successfully created at port %d.\n", port);
+        printf("\n...socket successfully created.\n");
     }
 
 
@@ -112,7 +112,7 @@ int32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
                    (socklen_t)sizeof(so_linger));
 
         if (verbosity_level > 1) {
-            printf("...setting SO_LINGER socket option, timeout %d sec. ", L_LINGER);
+            printf("...setting SO_LINGER socket option, specified timeout %d sec. ", L_LINGER);
             printf("Status: %s\n", strerror(errno));
         }
     #endif
@@ -132,53 +132,65 @@ int32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
     serveraddr.sin_port = htons(port);
 
     if (bind(*sockfd, (struct sockaddr*)&serveraddr, sizeof(serveraddr)) != 0) {
-        return SOCKET_INIT_ERR_BIND;
+        return SOCKETS_INIT_ERR_BIND;
     } else if (verbosity_level > 0) {
-        printf("...socket successfully bound at port %d.\n", port);
+        printf("...socket successfully bound.\n");
     }
 
 
     /*--- Связка вновь созданного сокета и адреса ---*/
 
-    if (listen(*sockfd, SOCKET_BACKLOG) != 0) {
-        return SOCKET_INIT_ERR_LISTEN;
+    if (listen(*sockfd, numconn) != 0) {
+        return SOCKETS_INIT_ERR_LISTEN;
     } else if (verbosity_level > 0) {
-        printf("...server is listening at port %d.\n", port);
+        printf("...server is listening.\n");
     }
 
-    return SOCKET_INIT_OK;
+    return SOCKETS_INIT_OK;
 }
 
-int32_t sockets_set_connection(int32_t sockfd, int32_t *connfd, int32_t port, uint32_t verbosity_level)
+int32_t sockets_proceed(int32_t sockfd, int32_t *connfd, uint32_t timeout_sec, uint32_t verbosity_level)
 {
+    // Установка связи с клиентом.
     int32_t socklen = 0;
     struct sockaddr_in clientaddr;
 
-    // Установка связи с клиентом.
     socklen = sizeof(clientaddr);
     *connfd = accept(sockfd, (struct sockaddr*)&clientaddr, (socklen_t*)&socklen);
     if (*connfd < 0) {
-        return SOCKET_SETCON_ERR_ACCEPT;
+        return SOCKETS_PROCEED_ERR_ACCEPT;
     } else if (verbosity_level > 0) {
-        printf("\nServer accepted a client at port %d, ", port);
+        printf("\nServer accepted a client, waiting for incoming data. ");
         timestamp_print();
-        printf(". Waiting for incoming data.\n");
+        printf(".\n");
     }
 
-    return SOCKET_SETCON_OK;
-}
-
-int32_t sockets_peek(int32_t connfd)
-{
+    // Проверка наличия данных в сокете.
     struct timeval tv;
-    tv.tv_sec = SELECT_TIMEOUT_SEC;
-    tv.tv_usec = SELECT_TIMEOUT_USEC;
+    tv.tv_sec = timeout_sec;
+    tv.tv_usec = 0;
                    
     fd_set readfds;
     FD_ZERO(&readfds);
-    FD_SET(connfd, &readfds);
+    FD_SET(*connfd, &readfds);
 
-    return select(connfd + 1, &readfds, NULL, NULL, &tv);
+    int32_t result = select(*connfd + 1, &readfds, NULL, NULL, &tv);
+    int32_t retval = -1;
+
+    if (result < 0) {
+        retval = SOCKETS_PROCEED_ERR_SELECT;
+    } else if (result == 0) {
+        retval = SOCKETS_PROCEED_TIMEOUT;
+        if (verbosity_level > 0) {
+            printf("Connection closed due to timeout. ");
+            timestamp_print();
+            printf(".\n");
+        }
+    } else if (result > 0) {
+        retval = SOCKETS_PROCEED_OK;
+    }
+
+    return retval;
 }
 
 void sockets_read_message(int32_t connfd, char *buf, size_t buf_size, uint32_t verbosity_level)
@@ -209,6 +221,10 @@ void sockets_write_message(int32_t connfd, char *buf, uint32_t verbosity_level)
 
 int32_t sockets_close(int32_t fd)
 {
-    //shutdown(fd, SHUT_RDWR);  // Вроде не обязательно, но иногда рекомендуют.
-    return close(fd);
+    //shutdown(fd, SHUT_RDWR);  // Вроде не обязательно, хотя иногда рекомендуют.
+    usleep(50000);
+    int32_t retval = close(fd);
+    usleep(50000);
+
+    return retval;
 }

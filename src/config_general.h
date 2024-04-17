@@ -35,6 +35,7 @@ DELIM_STR "[tT][oO][pP][iI][cC]_([1-9][0-9]{0,1}|100)" DELIM_STR "[aA][tT]\\+[a-
 
 // Минимальная длина пароля.
 #define PASSWORD_MIN_LEN 5
+#define PASSWORD_MAX_LEN 5
 
 // Количество попыток "мягкого" закрытия сокета.
 #define GRACEFUL_SOCKET_CLOSE_ATTEMPTS 30
@@ -46,6 +47,13 @@ DELIM_STR "[tT][oO][pP][iI][cC]_([1-9][0-9]{0,1}|100)" DELIM_STR "[aA][tT]\\+[a-
 
 // Значения для установки опций сокетов.
 #define L_LINGER 2
+
+// Максимальная длина очереди из ожидающих подключений, второй аргумент для передачи в функцию listen().
+#define SOCKET_BACKLOG 5
+
+// Длительность таймаута для функции select().
+#define SELECT_TIMEOUT_SEC         10
+#define SELECT_TIMEOUT_USEC        0
 
 
 #endif  // Защита от повторного включения заголовочного файла.

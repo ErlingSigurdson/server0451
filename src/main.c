@@ -43,10 +43,11 @@ void opt_handle(int32_t argc, char *argv[],
                 int32_t *port,
                 char *password, size_t password_buf_size,
                 bool *oneshot_mode, 
-                uint32_t *verbosity_level);
+                uint32_t *verbosity_level,
+                bool *print_help_page);
 
 // Завершение связи с клиентом.
-void finish_communication(int32_t fd, uint32_t verbosity_level);
+void finish_communication(int32_t fd, uint32_t attempts, uint32_t verbosity_level);
 
 
 /******************** ФУНКЦИИ *******************/
@@ -56,87 +57,111 @@ int32_t main(int32_t argc, char *argv[])
     /*--- Чтение и обработка опций командной строки и их аргументов ---*/
 
     // Переменные для хранения значений, переданных из командной строки.
-    int32_t port = -1;  // По умолчанию задано невалидное значение.
-    char password[STR_MAX_LEN + 1 ] = {0};
-    bool oneshot_mode = 0;
+    int32_t port = -1;      // По умолчанию задано невалидное значение.
+    char password[STR_MAX_LEN + 1] = {0};
+    bool oneshot_mode = 0;  // Флаг запуска в тестовом режиме (oneshot).
     uint32_t verbosity_level = 0;
+    bool print_help_page = 0;
 
     // Чтение опций командной строки и их аргументов.
-    opt_handle(argc, argv, &port, password, sizeof(password), &oneshot_mode, &verbosity_level);
+    opt_handle(argc, argv, &port, password, sizeof(password), &oneshot_mode, &verbosity_level, &print_help_page);
 
-    if (port <= 0) {
-        fprintf(stderr, "Error: invalid port.\n");
-        fprintf(stderr, "Please restart the program and insert a valid port number as a -p option argument.\n");
-        exit(1);
+    if (print_help_page) {
+        PRINT_HELP_PAGE;
+        exit(0);
     }
 
-    if (strlen(password) < PASSWORD_MIN_LEN) {
-        fprintf(stderr, "Error: invalid password.\n");
-        fprintf(stderr, "Please restart the program and insert a valid password as a -P option argument.\n");
+    // Проверка валидности значений, переданных из командной строки.
+    if (port <= 0) {
+        fprintf(stderr, "Error: invalid port specified. Program terminated.\n"
+                        "Please restart the program and insert a valid port number as a -p option argument.\n");
+        exit(1);
+    }
+    
+    if (strlen(password) < PASSWORD_MIN_LEN || strlen(password) > PASSWORD_MAX_LEN) {
+        fprintf(stderr, "Error: invalid password specified. Program terminated.\n"
+                        "Please restart the program and insert a valid password as a -P option argument.\n"
+                        "Password must consist of 5 to 40 ASCII alphanumerics.\n");
         exit(1);
     }
 
     if (verbosity_level > 0) {
-        printf("\n\n* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
-        printf("                        Starting TCP IoT server\n");
-        printf("Server started at port %u, ", port);
+        printf("\n\n"
+               "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n"
+               "                        Starting TCP IoT server\n"
+               "Server started at port %u. ", port);
         timestamp_print();
-        printf("\n* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
+        printf("\n"
+               "* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *\n");
     }
 
 
     /*--- Работа с сокетами ---*/
 
-    int32_t sockfd = 0;
-    uint32_t init_result = sockets_init(&sockfd, port, verbosity_level);
-    switch (init_result) {
-        case SOCKET_ERR_CREATE:
-            fprintf(stderr, "\nError: socket creation at port %d failed.\n", port);
-            fprintf(stderr, "Error description: %s\n", strerror(errno));
+    // Создание и подготовка "слушающего" сокета.
+    int32_t sockfd = -1;  // По умолчанию задано невалидное значение.
+    int32_t sockets_init_retval = sockets_init(&sockfd, port, SOCKET_BACKLOG, verbosity_level);
+    switch (sockets_init_retval) {
+        case SOCKETS_INIT_ERR_CREATE:
+            fprintf(stderr, "\n"
+                            "Error: socket creation at port %d failed. Program terminated.\n"
+                            "Error description: %s\n",
+                            port, strerror(errno));
             exit(1);
-            break;    // Не особо нужно после вызова exit(), но здесь и далее присутствует для единообразия.
-        case SOCKET_ERR_BIND:
-            fprintf(stderr, "\nError: socket binding at port %d failed.\n", port);
-            fprintf(stderr, "Error description: %s\n", strerror(errno));
+            break;        // По сути не нужно после вызова exit(), но здесь и далее присутствует для единообразия.
+        case SOCKETS_INIT_ERR_BIND:
+            fprintf(stderr, "\n"
+                            "Error: socket binding at port %d failed. Program terminated.\n"
+                            "Error description: %s\n",
+                            port, strerror(errno));
             exit(1);
             break;
-        case SOCKET_ERR_LISTEN:
-            fprintf(stderr, "\nError: entering a listen mode at port %d failed.\n", port);
-            fprintf(stderr, "Error description: %s\n", strerror(errno));
+        case SOCKETS_INIT_ERR_LISTEN:
+            fprintf(stderr, "\n"
+                            "Error: entering a listen mode at port %d failed. Program terminated.\n"
+                            "Error description: %s\n",
+                            port, strerror(errno));
             exit(1);
             break;
-        case SOCKET_OK:
-            // Успешная инициализация сокета.
+        case SOCKETS_INIT_OK:
+            // Успешная инициализация "слушающего" сокета.
             break;
         default:
             // Ничего не делаем, отдаём дань MISRA.
             break;
     }
 
+    // Сокет текущего соединения.
+    int32_t connfd = -1;  // По умолчанию задано невалидное значение.
+
+    /* Установка соединения и обмен данными.
+     * В тестовом режиме (oneshot) следующий блок кода выполнится единожды,
+     * в основном режиме (loop) он будет выполняться циклически.
+     */
     do {
-        int32_t connfd = 0;
-        int32_t set_connection_result = sockets_set_connection(sockfd, &connfd, port, verbosity_level);
-        switch (set_connection_result) {
-            case SOCKET_ERR_ACCEPT:
-                fprintf(stderr, "\nError: server failed to accept a client at port %d.\n", port);
-                fprintf(stderr, "Error description: %s\n", strerror(errno));
+        int32_t sockets_proceed_retval = sockets_proceed(sockfd, &connfd, SELECT_TIMEOUT_SEC, verbosity_level);
+        switch (sockets_proceed_retval) {
+            case SOCKETS_PROCEED_ERR_ACCEPT:
+                fprintf(stderr, "\n"
+                                "Error: server failed to accept a client at port %d. "
+                                "Keeps listening for a next connection.\n"
+                                "Error description: %s\n",
+                                port, strerror(errno));
                 continue;
                 break;
-            /*
-            case SOCKET_ERR_SELECT:
-                fprintf(stderr, "\nError: select() call returned error.\n");
-                fprintf(stderr, "Error description: %s\n", strerror(errno));
-                printf("DEBUG select error.");
-                finish_communication(connfd, verbosity_level);
+            case SOCKETS_PROCEED_ERR_SELECT:
+                fprintf(stderr, "\n"
+                                "Error: server failed to find a socket available for reading. "
+                                "Keeps listening for a next connection.\n"
+                                "Error description: %s\n",
+                                strerror(errno));
                 continue;
                 break;
-            case SOCKET_TIMEOUT:
-                printf("DEBUG select timeout.");
-                finish_communication(connfd, verbosity_level);
+            case SOCKETS_PROCEED_TIMEOUT:
+                finish_communication(connfd, GRACEFUL_SOCKET_CLOSE_ATTEMPTS, verbosity_level);
                 continue;
                 break;
-            */
-            case SOCKET_OK:
+            case SOCKETS_PROCEED_OK:
                 // Установка связи с клиентом прошла успешно.
                 break;
             default:
@@ -154,8 +179,8 @@ int32_t main(int32_t argc, char *argv[])
         strcpy(resulting_pattern, password);
         strcat(resulting_pattern, MSG_FORMAT_REGEX_PATTERN);
 
-        uint32_t msg_format_check_result = msg_format_check_regex(buf, resulting_pattern);
-        switch (msg_format_check_result) {
+        int32_t msg_format_check_retval = msg_format_check_regex(buf, resulting_pattern);
+        switch (msg_format_check_retval) {
             case MSG_FORMAT_REGEX_COMP_FAIL:
                 printf("\nMessage format check failed: error compiling regex.\n");
                 strcpy(buf, "Message format check failed: error compiling regex.");
@@ -187,14 +212,14 @@ int32_t main(int32_t argc, char *argv[])
 
         /*--- Завершение коммуникации с очередным клиентом ---*/
 
-        finish_communication(connfd, verbosity_level);
+        finish_communication(connfd, GRACEFUL_SOCKET_CLOSE_ATTEMPTS, verbosity_level);
 
 
-        /*--- Вывод буфера в консоль ---*/
+        /*--- Вывод буфера ---*/
 
-        /* Если внутри программы есть бесконечный цикл, то по умолчанию
-         * выводимые данные будут копиться в буфере и так и не попадут
-         * в терминал.
+        /* Если в программе есть бесконечный цикл, то по умолчанию выводимые данные
+         * будут копиться в буфере, пока не будет дана команда на вывод буфера
+         * или он не заполнится до определённого значения.
          */
         fflush(stdout);
         fflush(stderr);
@@ -202,7 +227,7 @@ int32_t main(int32_t argc, char *argv[])
     while (!oneshot_mode);
 
     // Исполнение программы доходит досюда только в режиме одиночного прогона.
-    finish_communication(sockfd, 0);
+    finish_communication(sockfd, GRACEFUL_SOCKET_CLOSE_ATTEMPTS, 0);
 
     return 0;
 }
@@ -211,20 +236,21 @@ void opt_handle(int32_t argc, char *argv[],
                 int32_t *port,
                 char *password, size_t password_buf_size,
                 bool *oneshot_mode,
-                uint32_t *verbosity_level)
+                uint32_t *verbosity_level,
+                bool *print_help_page)
 {
     int32_t opt = 0;
     while ((opt = getopt(argc, argv, "p:P:ovVh")) >= 0) {
         switch (opt) {
-            // Обязательная опция, принимает номер порта в качестве аргумента.
+            // Обязательная опция, принимает в качестве аргумента номер порта.
             case 'p':
                 *port = strtol(optarg, NULL, 10);
                 break;
 
-            // Обязательная опция, принимает строку с паролем в качестве аргумента.
+            // Обязательная опция, принимает в качестве аргумента строку с паролем.
             case 'P':
                 if (strlen(optarg) < password_buf_size) {
-                    sscanf(optarg, "%s", password);
+                    strcpy(password, optarg);
                 }
                 break;
 
@@ -241,8 +267,7 @@ void opt_handle(int32_t argc, char *argv[],
                 break;
 
             case 'h':
-                PRINT_HELP_PAGE;
-                exit(0);
+                *print_help_page = 1;
                 break;
 
             default:
@@ -252,7 +277,7 @@ void opt_handle(int32_t argc, char *argv[],
     }
 }
 
-void finish_communication(int32_t fd, uint32_t verbosity_level)
+void finish_communication(int32_t fd, uint32_t attempts, uint32_t verbosity_level)
 {
     if (verbosity_level <= 0) {
         return;
@@ -260,26 +285,25 @@ void finish_communication(int32_t fd, uint32_t verbosity_level)
 
     if (verbosity_level == 1) {
         sockets_close(fd);
-        printf("\nCommunication closed.");
-        printf("\n---------------------------------------------------------------------------\n");
+        printf("\nCommunication closed.\n"
+               "\n---------------------\n");
+               
         return;
     }
 
     int32_t close_retval = -1;
     uint32_t i = 0;
-    for (; i <= GRACEFUL_SOCKET_CLOSE_ATTEMPTS; ++i) {
+    for (; i <= attempts; ++i) {
         if ((close_retval = sockets_close(fd)) != 0) {
-            //printf("\nclose_retval is %d\n", close_retval);
-            fprintf(stderr,
-                    "\nError: failed closing socket on attempt %d of %d, status: %s\n",
-                    i, GRACEFUL_SOCKET_CLOSE_ATTEMPTS, strerror(errno));
+            printf("\nClosing socket failed on attempt %d of %d, status: %s\n",
+                   i, attempts, strerror(errno));
         } else {
-            //printf("\nclose_retval is %d\n", close_retval);
             printf("\nCommunication closed gracefully.");
-            printf("\n---------------------------------------------------------------------------\n");
+            printf("\n--------------------------------\n");
+            
             return;
         }
     }
     printf("\nCommunication closed ungracefully.");
-    printf("\n---------------------------------------------------------------------------\n");
+    printf("\n----------------------------------\n");
 }
