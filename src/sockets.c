@@ -2,9 +2,9 @@
 
 /**
  * Имя файла: sockets.c
- * --------------------------------------------------------------------------------|---------------------------------------|
- * Назначение: базовая работа с сокетами в Linux.
- * --------------------------------------------------------------------------------|---------------------------------------|
+ * ----------------------------------------------------------------------------|---------------------------------------|
+ * Назначение: работа с сокетами TCP/IP.
+ * ----------------------------------------------------------------------------|---------------------------------------|
  * Примечания:
  */
 
@@ -49,7 +49,7 @@ int32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
 
     *sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (*sockfd < 0) {
-        return SOCKET_ERR_CREATE;
+        return SOCKET_INIT_ERR_CREATE;
     } else if (verbosity_level > 0) {
         printf("\n...socket successfully created at port %d.\n", port);
     }
@@ -132,7 +132,7 @@ int32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
     serveraddr.sin_port = htons(port);
 
     if (bind(*sockfd, (struct sockaddr*)&serveraddr, sizeof(serveraddr)) != 0) {
-        return SOCKET_ERR_BIND;
+        return SOCKET_INIT_ERR_BIND;
     } else if (verbosity_level > 0) {
         printf("...socket successfully bound at port %d.\n", port);
     }
@@ -141,12 +141,12 @@ int32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t verbosity_level)
     /*--- Связка вновь созданного сокета и адреса ---*/
 
     if (listen(*sockfd, SOCKET_BACKLOG) != 0) {
-        return SOCKET_ERR_LISTEN;
+        return SOCKET_INIT_ERR_LISTEN;
     } else if (verbosity_level > 0) {
         printf("...server is listening at port %d.\n", port);
     }
 
-    return SOCKET_OK;
+    return SOCKET_INIT_OK;
 }
 
 int32_t sockets_set_connection(int32_t sockfd, int32_t *connfd, int32_t port, uint32_t verbosity_level)
@@ -158,30 +158,27 @@ int32_t sockets_set_connection(int32_t sockfd, int32_t *connfd, int32_t port, ui
     socklen = sizeof(clientaddr);
     *connfd = accept(sockfd, (struct sockaddr*)&clientaddr, (socklen_t*)&socklen);
     if (*connfd < 0) {
-        return SOCKET_ERR_ACCEPT;
+        return SOCKET_SETCON_ERR_ACCEPT;
     } else if (verbosity_level > 0) {
         printf("\nServer accepted a client at port %d, ", port);
         timestamp_print();
         printf(". Waiting for incoming data.\n");
     }
 
-    int32_t select_retval;
-    do {
-       struct timeval tv;
-       tv.tv_sec = 2;
-       tv.tv_usec = 0;
-           
-       fd_set readfds;
-       
-       FD_ZERO(&readfds);
-       FD_SET(*connfd, &readfds);
-       select_retval = select(*connfd+1, &readfds, NULL, NULL, &tv);
+    return SOCKET_SETCON_OK;
+}
 
-       printf("\nDEBUG select_retval is %d.\n", select_retval);
-    }
-    while (select_retval <= 0);
+int32_t sockets_peek(int32_t connfd)
+{
+    struct timeval tv;
+    tv.tv_sec = SELECT_TIMEOUT_SEC;
+    tv.tv_usec = SELECT_TIMEOUT_USEC;
+                   
+    fd_set readfds;
+    FD_ZERO(&readfds);
+    FD_SET(connfd, &readfds);
 
-    return SOCKET_OK;
+    return select(connfd + 1, &readfds, NULL, NULL, &tv);
 }
 
 void sockets_read_message(int32_t connfd, char *buf, size_t buf_size, uint32_t verbosity_level)
