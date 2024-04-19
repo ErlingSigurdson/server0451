@@ -22,7 +22,7 @@
 // Из библиотек POSIX.
 #include <unistd.h>
 
-// Настройки проекта.
+// Настройки.
 #include "config_general.h"
 
 // Локальные модули.

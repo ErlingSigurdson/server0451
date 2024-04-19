@@ -19,9 +19,11 @@
 // Из библиотек POSIX.
 #include <time.h>
 
+// Настройки.
+#include "config_general.h"
+
 // Локальные модули.
 #include "timestamp.h"
-#include "config_general.h"
 
 
 /******************** ФУНКЦИИ *******************/

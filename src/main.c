@@ -25,7 +25,7 @@
 // Из библиотек POSIX.
 #include <unistd.h>
 
-// Настройки проекта.
+// Настройки.
 #include "config_general.h"
 
 // Локальные модули.
@@ -165,7 +165,7 @@ int32_t main(int32_t argc, char *argv[])
                 continue;
                 break;
             case SOCKETS_PROCEED_TIMEOUT:
-                finish_communication(connfd, GRACEFUL_SOCKET_CLOSE_ATTEMPTS, SOCKET_CLOSE_PAUSE, verbosity_level);
+                finish_communication(connfd, SOCKET_GRACEFUL_CLOSE_ATTEMPTS, SOCKET_CLOSE_PAUSE, verbosity_level);
                 continue;
                 break;
             case SOCKETS_PROCEED_OK:
@@ -248,7 +248,7 @@ int32_t main(int32_t argc, char *argv[])
 
         /*--- Завершение коммуникации с очередным клиентом ---*/
 
-        finish_communication(connfd, GRACEFUL_SOCKET_CLOSE_ATTEMPTS, SOCKET_CLOSE_PAUSE, verbosity_level);
+        finish_communication(connfd, SOCKET_GRACEFUL_CLOSE_ATTEMPTS, SOCKET_CLOSE_PAUSE, verbosity_level);
 
 
         /*--- Вывод буфера ---*/
@@ -262,8 +262,10 @@ int32_t main(int32_t argc, char *argv[])
     }
     while (!oneshot_mode);
 
-    // Исполнение программы доходит досюда только в режиме одиночного прогона.
-    finish_communication(sockfd, GRACEFUL_SOCKET_CLOSE_ATTEMPTS, SOCKET_CLOSE_PAUSE, 0);
+    /* Закрытие слушающего сокета.
+     * Исполнение программы доходит досюда только в режиме одиночного прогона.
+     */
+    finish_communication(sockfd, SOCKET_GRACEFUL_CLOSE_ATTEMPTS, SOCKET_CLOSE_PAUSE, 0);
 
     return 0;
 }
@@ -315,31 +317,38 @@ void opt_handle(int32_t argc, char *argv[],
 
 void finish_communication(int32_t fd, uint32_t attempts, uint32_t pause, uint32_t verbosity_level)
 {
-    if (verbosity_level <= 0) {
-        sockets_close(fd, pause);
+    if (verbosity_level == 0) {
+        if (sockets_close(fd, pause) != 0) {
+            fprintf(stderr, "\n"
+                    "Communication closed ungracefully.\n"
+                    "----------------------------------\n");         
+        }
         return;
     }
 
     if (verbosity_level == 1) {
-        sockets_close(fd, pause);
-        printf("\n"
-               "Communication closed.\n"
-               "---------------------\n");
-               
+        if (sockets_close(fd, pause) == 0) {
+            printf("\n"
+                   "Communication closed gracefully.\n"
+                   "--------------------------------\n");   
+        } else {
+            fprintf(stderr, "\n"
+                    "Communication closed ungracefully.\n"
+                    "----------------------------------\n");         
+        }
         return;
     }
 
-    int32_t close_retval = -1;
-    uint32_t i = 0;
-    for (; i <= attempts; ++i) {
-        if ((close_retval = sockets_close(fd, pause)) != 0) {
+    for (uint32_t i = 1; i <= attempts; ++i) {
+        if (sockets_close(fd, pause) != 0) {
             fprintf(stderr, "\n"
                             "Closing socket failed on attempt %d of %d, status: %s\n",
                             i, attempts, strerror(errno));
         } else {
             printf("\n"
-                   "Communication closed gracefully.\n"
-                   "--------------------------------\n");
+                   "Communication closed gracefully on attempt %d.\n"
+                   "----------------------------------------_------\n",
+                   i);
             
             return;
         }

@@ -29,7 +29,7 @@
 //#include <sys/socket.h>
 //#include <sys/types.h>
 
-// Настройки проекта.
+// Настройки.
 #include "config_general.h"
 
 // Локальные модули.
@@ -73,7 +73,7 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t numconn, uint32_t 
         if (so_reuseport_result != 0) {
             return SOCKETS_INIT_ERR_SETSOCKOPT;
         } else if (verbosity_level > 1) {
-            printf("...setting SO_REUSEPORT socket option. Success.");
+            printf("...setting SO_REUSEPORT socket option. Success.\n");
         }
     #endif
 
@@ -92,7 +92,7 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t numconn, uint32_t 
         if (so_reuseaddr_result != 0) {
             return SOCKETS_INIT_ERR_SETSOCKOPT;
         } else if (verbosity_level > 1) {
-            printf("...setting SO_REUSEADDR socket option. Success.");
+            printf("...setting SO_REUSEADDR socket option. Success.\n");
         }
     #endif
 
@@ -103,15 +103,17 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t numconn, uint32_t 
         struct linger so_linger;
         so_linger.l_onoff = 1;
         so_linger.l_linger = L_LINGER;
-        setsockopt(*sockfd,
-                   SOL_SOCKET,
-                   SO_LINGER,
-                   &so_linger,
-                   (socklen_t)sizeof(so_linger));
+        int32_t so_linger_result = setsockopt(*sockfd,
+                                              SOL_SOCKET,
+                                              SO_LINGER,
+                                              &so_linger,
+                                              (socklen_t)sizeof(so_linger));
 
-        if (verbosity_level > 1) {
-            printf("...setting SO_LINGER socket option, specified timeout %d sec. ", L_LINGER);
-            printf("Status: %s\n", strerror(errno));
+        if (so_linger_result != 0) {
+            return SOCKETS_INIT_ERR_SETSOCKOPT;
+        } else if (verbosity_level > 1) {
+            printf("...setting SO_LINGER socket option, specified linger time is %d sec. Success.\n",
+                   so_linger.l_linger);
         }
     #endif
 
@@ -149,7 +151,8 @@ uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t numconn, uint32_t 
 
 uint32_t sockets_proceed(int32_t sockfd, int32_t *connfd, uint32_t timeout_sec, uint32_t verbosity_level)
 {
-    // Установка связи с клиентом.
+    /*--- Установка связи с клиентом ---*/
+    
     int32_t socklen = 0;
     struct sockaddr_in clientaddr;
 
@@ -163,7 +166,9 @@ uint32_t sockets_proceed(int32_t sockfd, int32_t *connfd, uint32_t timeout_sec, 
         printf(".\n");
     }
 
-    // Проверка наличия данных в сокете.
+
+    /*--- Проверка наличия данных в сокете ---*/
+    
     struct timeval tv;
     tv.tv_sec = timeout_sec;
     tv.tv_usec = 0;
@@ -199,7 +204,7 @@ void sockets_read_message(int32_t connfd, char *buf, size_t buf_size, uint32_t v
 
     // Вывод содержимого буфера.
     if (verbosity_level > 0) {
-        printf("\nMessage received from the client:\n%s\n", buf);
+        printf("\nMessage received from the client: %s\n", buf);
     }
 }
 
