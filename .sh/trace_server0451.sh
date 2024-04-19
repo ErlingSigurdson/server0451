@@ -55,6 +55,7 @@ while true; do
         echo -e "--------------------------------------------------------------------------------------"\
         >> $LOG_FILE_PATH
         RESTART_DUE=0
+        exit
     fi
     
     sleep $PERIOD
