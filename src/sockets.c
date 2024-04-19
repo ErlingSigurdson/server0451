@@ -16,10 +16,7 @@
 // Из стандартной библиотеки языка Си.
 #include <stdio.h>
 #include <inttypes.h>
-//#include <stdbool.h>
 #include <string.h>
-//#include <stdlib.h>
-#include <errno.h>
 
 // Из библиотек POSIX.
 #include <unistd.h>
@@ -43,7 +40,7 @@
 
 /******************** ФУНКЦИИ *******************/
 
-int32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t numconn, uint32_t verbosity_level)
+uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t numconn, uint32_t verbosity_level)
 {
     /*--- Создание сокета ---*/
 
@@ -55,7 +52,7 @@ int32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t numconn, uint32_t v
     }
 
 
-    /*--- Установка опций сокетов (опционально) ---*/
+    /*--- Установка опций сокетов ---*/
 
     /* Условной компиляцией можно управлять с помощью соответствующих директив,
      * приведённых в файле config_general.h.
@@ -67,15 +64,16 @@ int32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t numconn, uint32_t v
          * Если это делается, то обязательно до вызова bind().
          */
         int32_t so_reuseport = 1;
-        setsockopt(*sockfd,
-                   SOL_SOCKET,
-                   SO_REUSEPORT,
-                   &so_reuseport,
-                   (socklen_t)sizeof(so_reuseport));
+        int32_t so_reuseport_result = setsockopt(*sockfd,
+                                                 SOL_SOCKET,
+                                                 SO_REUSEPORT,
+                                                 &so_reuseport,
+                                                 (socklen_t)sizeof(so_reuseport));
 
-        if (verbosity_level > 1) {
-            printf("...setting SO_REUSEPORT socket option. ");
-            printf("Status: %s\n", strerror(errno));
+        if (so_reuseport_result != 0) {
+            return SOCKETS_INIT_ERR_SETSOCKOPT;
+        } else if (verbosity_level > 1) {
+            printf("...setting SO_REUSEPORT socket option. Success.");
         }
     #endif
 
@@ -85,21 +83,21 @@ int32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t numconn, uint32_t v
          * Если это делается, то обязательно до вызова bind().
          */
         int32_t so_reuseaddr = 1;
-        setsockopt(*sockfd,
-                   SOL_SOCKET,
-                   SO_REUSEADDR,
-                   &so_reuseaddr,
-                   (socklen_t)sizeof(so_reuseaddr));
+        int32_t so_reuseaddr_result = setsockopt(*sockfd,
+                                                 SOL_SOCKET,
+                                                 SO_REUSEADDR,
+                                                 &so_reuseaddr,
+                                                 (socklen_t)sizeof(so_reuseaddr));
 
-        if (verbosity_level > 1) {
-            printf("...setting SO_REUSEADDR socket option. ");
-            printf("Status: %s\n", strerror(errno));
+        if (so_reuseaddr_result != 0) {
+            return SOCKETS_INIT_ERR_SETSOCKOPT;
+        } else if (verbosity_level > 1) {
+            printf("...setting SO_REUSEADDR socket option. Success.");
         }
     #endif
 
     #ifdef SOCKOPT_SO_LINGER
-        /* Разрешение закрывать сокет, не дожидаясь обычного завершения
-         * процедуры передачи данных.
+        /* Установка времени ожидания полной передачи данных.
          * Если это делается, то обязательно до вызова bind().
          */
         struct linger so_linger;
@@ -149,7 +147,7 @@ int32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t numconn, uint32_t v
     return SOCKETS_INIT_OK;
 }
 
-int32_t sockets_proceed(int32_t sockfd, int32_t *connfd, uint32_t timeout_sec, uint32_t verbosity_level)
+uint32_t sockets_proceed(int32_t sockfd, int32_t *connfd, uint32_t timeout_sec, uint32_t verbosity_level)
 {
     // Установка связи с клиентом.
     int32_t socklen = 0;
@@ -215,16 +213,16 @@ void sockets_write_message(int32_t connfd, char *buf, uint32_t verbosity_level)
     utilities_nullify_all_trailing_CR_and_LF_in_string(buf);
 
     if (verbosity_level > 0) {
-        printf("\nMessage sent to the client:\n%s\n", buf);
+        printf("\nMessage sent to the client: %s\n", buf);
     }
 }
 
-int32_t sockets_close(int32_t fd)
+int32_t sockets_close(int32_t fd, uint32_t pause)
 {
     //shutdown(fd, SHUT_RDWR);  // Вроде не обязательно, хотя иногда рекомендуют.
-    usleep(50000);
+    usleep(pause);
     int32_t retval = close(fd);
-    usleep(50000);
+    usleep(pause);
 
     return retval;
 }

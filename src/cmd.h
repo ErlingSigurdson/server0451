@@ -21,16 +21,21 @@
 // Из стандартной библиотеки языка Си.
 #include <stdio.h>
 #include <inttypes.h>
-//#include <stdbool.h>
-//#include <string.h>
-//#include <stdlib.h>
-//#include <errno.h>
+
+
+/*--- Прочее ---*/
+
+// Значения, возвращаемые функциями cmd_extract() и cmd_handle().
+#define CMD_ERR_EXTRACT          3
+#define CMD_ERR_TOGGLE           2
+#define CMD_ERR_NO_VALID_COMMAND 1
+#define CMD_OK                   0
 
 
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/
 
-void cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level);
-void cmd_extract(char *buf, char *buf_topic, char *buf_cmd, char delim);
+uint32_t cmd_extract(char *buf, char *buf_cmd, char *buf_topic, char delim);
+uint32_t cmd_handle(int32_t connfd, char *buf, uint32_t verbosity_level);
 
 
 #endif  // Защита от повторного включения заголовочного файла.
