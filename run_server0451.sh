@@ -118,7 +118,7 @@ fi
 ## Запуск скрипта автоматического отслеживания CLOSE-WAIT'ов
 if [ "$TRACE" = "on" ]; then
     nohup $TRACE_SCRIPT_FILE_PATH\
-          $EXEC_BIN_FILE_NAME $RUN_SCRIPT_FILE_NAME $LOG_FLUSH_SCRIPT_FILE_PATH\
+          "exec_bin" "run_script" "log_flush"\
           $RUN_SCRIPT_FILE_PATH $LOG_FILE_PATH\
-          >> $LOG_FILE_PATH 2>&1 &
+          >> /dev/null 2>&1 &
 fi

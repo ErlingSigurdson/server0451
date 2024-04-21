@@ -2,28 +2,21 @@
 
 #****************** ПЕРЕМЕННЫЕ ******************#
 
-#--- Названия файлов ---#
-
-EXEC_BIN_FILE_NAME="$1"
-RUN_SCRIPT_FILE_NAME="$2"
-LOG_FLUSH_SCRIPT_FILE_NAME="$3"
-
-
 #--- Пути к файлам ---#
 
-RUN_SCRIPT_FILE_PATH="$4"
+RUN_SCRIPT_FILE_PATH=$4
 
-LOG_FILE_SCRIPT_PATH="$5"
+LOG_FILE_PATH=$5
 
 
 #--- Прочее ---#
 
-PATTERN_1="$EXEC_BIN_FILE_NAME"
-PATTERN_2="$RUN_SCRIPT_FILE_NAME"
-PATTERN_3="$LOG_FLUSH_SCRIPT_FILE_NAME"
+PATTERN_1=$1
+PATTERN_2=$2
+PATTERN_3=$3
 
-CLOSE_WAIT_THRESHOLD=2
-PERIOD=3
+CLOSE_WAIT_THRESHOLD=1
+PAUSE=3
 
 
 #******************* ПРОЦЕДУРЫ ******************#
@@ -34,14 +27,15 @@ RESTART_DUE=0
 
 while true; do
     CLOSE_WAIT_DETECTED=$(sudo ss -tapn | grep -E -c "CLOSE-WAIT")
-    EXEC_BIN_IS_RUNNING=$(pgrep -fc "$PATTERN_1")
-    RUN_SCRIPT_IS_RUNNING=$(pgrep -fc "$PATTERN_2")
-    LOG_FLUSH_SCRIPT_IS_RUNNING=$(pgrep -fc "$PATTERN_3")
+    EXEC_BIN_IS_RUNNING=$(pgrep -c "$PATTERN_1")
+    RUN_SCRIPT_IS_RUNNING=$(pgrep -c "$PATTERN_2")
+    LOG_FLUSH_SCRIPT_IS_RUNNING=$(pgrep -c "$PATTERN_3")
     
     if [ $CLOSE_WAIT_DETECTED -gt $CLOSE_WAIT_THRESHOLD ]; then
-        sudo pkill -f "$PATTERN_1"
-        sudo pkill -f "$PATTERN_2"
-        sudo pkill -f "$PATTERN_3"
+        echo "CLOSE-WAIT clogging detected" >> $LOG_FILE_PATH
+        sudo pkill -9 "$PATTERN_1"
+        sudo pkill -9 "$PATTERN_2"
+        sudo pkill -9 "$PATTERN_3"
         RESTART_DUE=1
     fi
 
@@ -58,5 +52,5 @@ while true; do
         exit
     fi
     
-    sleep $PERIOD
+    sleep $PAUSE
 done &
