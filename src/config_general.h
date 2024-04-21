@@ -30,7 +30,7 @@
 #define L_LINGER 2
 
 // Максимальная длина очереди из ожидающих подключений, второй аргумент для передачи в функцию listen().
-#define SOCKET_BACKLOG 5
+#define SOCKET_BACKLOG 128
 
 // Длительность таймаута для функции select().
 #define SELECT_TIMEOUT_SEC  10
