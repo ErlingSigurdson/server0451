@@ -49,6 +49,9 @@ void opt_handle(int32_t argc, char *argv[],
 // Завершение связи с клиентом.
 void finish_communication(int32_t fd, uint32_t attempts, uint32_t pause, uint32_t verbosity_level);
 
+// Вывод из буфера (для использования внутри цикла).
+void flush_all();
+
 
 /******************** ФУНКЦИИ *******************/
 
@@ -146,15 +149,6 @@ int32_t main(int32_t argc, char *argv[])
      * в основном режиме (loop) он будет выполняться циклически.
      */
     do {
-        /*--- Вывод буфера ---*/
-
-        /* Если в программе есть бесконечный цикл, то по умолчанию выводимые в цикле данные
-         * будут копиться в буфере, пока не будет дана команда на вывод из буфера
-         * или он не заполнится до определённого значения.
-         */
-        fflush(stdout);
-        fflush(stderr);
-    
         uint32_t sockets_proceed_retval = sockets_proceed(sockfd, &connfd, SELECT_TIMEOUT_SEC, verbosity_level);
         switch (sockets_proceed_retval) {
             case SOCKETS_PROCEED_ERR_ACCEPT:
@@ -184,12 +178,14 @@ int32_t main(int32_t argc, char *argv[])
                 // Ничего не делаем, отдаём дань MISRA.
                 break;
         }
+        flush_all();
 
         /* Исполнение не дойдёт досюда, пока не будет установлена связь
          * с клиентом и тот не направит данные через сокет.
          */
         char buf[STR_MAX_LEN + 1] = {0};
         sockets_read_message(connfd, buf, sizeof(buf), verbosity_level);
+        flush_all();
 
        
         /*--- Проверка формата сообщения от клиента ---*/
@@ -222,6 +218,7 @@ int32_t main(int32_t argc, char *argv[])
                 // Ничего не делаем, отдаём дань MISRA.
                 break;
         }
+        flush_all();
 
 
         /*--- Обработка поступившей команды ---*/
@@ -253,11 +250,13 @@ int32_t main(int32_t argc, char *argv[])
                 // Ничего не делаем, отдаём дань MISRA.
                 break;
         }
+        flush_all();
 
 
         /*--- Завершение коммуникации с очередным клиентом ---*/
 
         finish_communication(connfd, SOCKET_GRACEFUL_CLOSE_ATTEMPTS, SOCKET_CLOSE_PAUSE, verbosity_level);
+        flush_all();
     }
     while (!oneshot_mode);
 
@@ -355,4 +354,14 @@ void finish_communication(int32_t fd, uint32_t attempts, uint32_t pause, uint32_
     fprintf(stderr, "\n"
                     "Communication closed ungracefully.\n"
                     "----------------------------------\n");
+}
+
+void flush_all()
+{
+    /* Если в программе есть бесконечный цикл, то по умолчанию выводимые в цикле данные
+     * будут копиться в буфере, пока не будет дана команда на вывод из буфера
+     * или он не заполнится до определённого значения.
+     */
+     fflush(stdin);
+     fflush(stdout);
 }
