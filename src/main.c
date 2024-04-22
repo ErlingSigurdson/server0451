@@ -80,7 +80,7 @@ int32_t main(int32_t argc, char *argv[])
                         "Please restart the program and insert a valid port number as a -p option argument.\n");
         exit(1);
     }
-    
+
     if (strlen(password) < PASSWORD_MIN_LEN || strlen(password) > PASSWORD_MAX_LEN) {
         fprintf(stderr, "Error: invalid password specified. Program terminated.\n"
                         "Please restart the program and insert a valid password as a -P option argument.\n"
@@ -149,6 +149,8 @@ int32_t main(int32_t argc, char *argv[])
      * в основном режиме (loop) он будет выполняться циклически.
      */
     do {
+        flush_all();
+
         uint32_t sockets_proceed_retval = sockets_proceed(sockfd, &connfd, SELECT_TIMEOUT_SEC, verbosity_level);
         switch (sockets_proceed_retval) {
             case SOCKETS_PROCEED_ERR_ACCEPT:
@@ -187,7 +189,7 @@ int32_t main(int32_t argc, char *argv[])
         sockets_read_message(connfd, buf, sizeof(buf), verbosity_level);
         flush_all();
 
-       
+
         /*--- Проверка формата сообщения от клиента ---*/
 
         char resulting_pattern[STR_MAX_LEN * 2 + 1] = {0};
@@ -347,7 +349,7 @@ void finish_communication(int32_t fd, uint32_t attempts, uint32_t pause, uint32_
                    "Communication closed gracefully on attempt %d.\n"
                    "-----------------------------------------------\n",
                    i);
-            
+
             return;
         }
     }
