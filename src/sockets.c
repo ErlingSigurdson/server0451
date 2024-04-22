@@ -185,7 +185,7 @@ uint32_t sockets_proceed(int32_t sockfd, int32_t *connfd, uint32_t timeout_sec, 
     } else if (result == 0) {
         retval = SOCKETS_PROCEED_TIMEOUT;
         if (verbosity_level > 0) {
-            printf("Connection closed due to timeout. ");
+            printf("\nConnection closed due to timeout. ");
             timestamp_print();
             printf(".\n");
         }

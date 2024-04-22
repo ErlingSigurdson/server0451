@@ -146,6 +146,15 @@ int32_t main(int32_t argc, char *argv[])
      * в основном режиме (loop) он будет выполняться циклически.
      */
     do {
+        /*--- Вывод буфера ---*/
+
+        /* Если в программе есть бесконечный цикл, то по умолчанию выводимые в цикле данные
+         * будут копиться в буфере, пока не будет дана команда на вывод из буфера
+         * или он не заполнится до определённого значения.
+         */
+        fflush(stdout);
+        fflush(stderr);
+    
         uint32_t sockets_proceed_retval = sockets_proceed(sockfd, &connfd, SELECT_TIMEOUT_SEC, verbosity_level);
         switch (sockets_proceed_retval) {
             case SOCKETS_PROCEED_ERR_ACCEPT:
@@ -249,16 +258,6 @@ int32_t main(int32_t argc, char *argv[])
         /*--- Завершение коммуникации с очередным клиентом ---*/
 
         finish_communication(connfd, SOCKET_GRACEFUL_CLOSE_ATTEMPTS, SOCKET_CLOSE_PAUSE, verbosity_level);
-
-
-        /*--- Вывод буфера ---*/
-
-        /* Если в программе есть бесконечный цикл, то по умолчанию выводимые в цикле данные
-         * будут копиться в буфере, пока не будет дана команда на вывод из буфера
-         * или он не заполнится до определённого значения.
-         */
-        fflush(stdout);
-        fflush(stderr);
     }
     while (!oneshot_mode);
 
