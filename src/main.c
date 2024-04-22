@@ -347,7 +347,7 @@ void finish_communication(int32_t fd, uint32_t attempts, uint32_t pause, uint32_
         } else {
             printf("\n"
                    "Communication closed gracefully on attempt %d.\n"
-                   "----------------------------------------_------\n",
+                   "-----------------------------------------------\n",
                    i);
             
             return;

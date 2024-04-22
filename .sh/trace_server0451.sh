@@ -32,7 +32,7 @@ while true; do
     LOG_FLUSH_SCRIPT_IS_RUNNING=$(pgrep -c "$PATTERN_3")
     
     if [ $CLOSE_WAIT_DETECTED -gt $CLOSE_WAIT_THRESHOLD ]; then
-        echo "CLOSE-WAIT clogging detected" >> $LOG_FILE_PATH
+        echo "CLOSE-WAIT clogging detected." >> $LOG_FILE_PATH
         sudo pkill -9 "$PATTERN_1"
         sudo pkill -9 "$PATTERN_2"
         sudo pkill -9 "$PATTERN_3"
