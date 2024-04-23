@@ -18,8 +18,6 @@
 #include <inttypes.h>
 #include <stdbool.h>
 #include <string.h>
-//#include <stdlib.h>
-//#include <errno.h>
 
 // Локальные модули.
 #include "utilities.h"

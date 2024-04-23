@@ -1,7 +1,7 @@
 /******************* ОПИСАНИЕ *******************/
 
 /**
- * Имя файла: msg_format_check_regex.h
+ * Имя файла: msg_format_check.h
  * ----------------------------------------------------------------------------|---------------------------------------|
  * Назначение: проверка формата сообщения с помощью регулярных выражений.
  * ----------------------------------------------------------------------------|---------------------------------------|
@@ -12,33 +12,22 @@
 /************ ДИРЕКТИВЫ ПРЕПРОЦЕССОРА ***********/
 
 // Защита от повторного включения заголовочного файла.
-#ifndef MSG_FORMAT_CHECK_REGEX_H
-#define MSG_FORMAT_CHECK_REGEX_H
-
-
-/*--- Включения ---*/
-
-// Из стандартной библиотеки языка Си.
-#include <stdio.h>
-//#include <inttypes.h>
-//#include <stdbool.h>
-//#include <string.h>
-//#include <stdlib.h>
-//#include <errno.h>
+#ifndef MSG_FORMAT_CHECK_H
+#define MSG_FORMAT_CHECK_H
 
 
 /*--- Прочее ---*/
 
-// Коды результата.
-#define MSG_FORMAT_REGEX_COMP_FAIL 3
-#define MSG_FORMAT_NO_MATCH 2
-#define MSG_FORMAT_PARTIAL_MATCH 1
-#define MSG_FORMAT_MATCH 0
+// Значения, возвращаемые функцией msg_format_check().
+#define MSG_FORMAT_CHECK_REGEX_COMP_FAIL 3
+#define MSG_FORMAT_CHECK_NO_MATCH        2
+#define MSG_FORMAT_CHECK_PARTIAL_MATCH   1
+#define MSG_FORMAT_CHECK_MATCH           0
 
 
 /*************** ПРОТОТИПЫ ФУНКЦИЙ **************/
 
-uint32_t msg_format_check_regex(char *buf, const char *pattern);
+uint32_t msg_format_check(char *buf, const char *pattern);
 
 
 #endif  // Защита от повторного включения заголовочного файла.

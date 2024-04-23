@@ -15,18 +15,15 @@
 
 // Из стандартной библиотеки языка Си.
 #include <stdio.h>
-//#include <inttypes.h>
-//#include <stdbool.h>
-//#include <string.h>
-//#include <stdlib.h>
-//#include <errno.h>
 
 // Из библиотек POSIX.
 #include <time.h>
 
+// Настройки.
+#include "config_general.h"
+
 // Локальные модули.
 #include "timestamp.h"
-#include "config_general.h"
 
 
 /******************** ФУНКЦИИ *******************/
@@ -40,6 +37,6 @@ void timestamp_print()
     posix_time = time(NULL);
     time_fields = localtime(&posix_time);
 
-    strftime(buf, sizeof(buf), "date: %d.%m.%Y, time (UTC+0): %H:%M:%S", time_fields);
+    strftime(buf, sizeof(buf), "Date: %d.%m.%Y, time (UTC+0): %H:%M:%S", time_fields);
     printf("%s", buf);
 }
