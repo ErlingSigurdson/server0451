@@ -30,7 +30,7 @@ TRACE_SCRIPT_FILE_PATH="$THIS_SCRIPT_DIR_PATH/.sh/$TRACE_SCRIPT_FILE_NAME"
 #--- Прочее ---#
 
 PORT=$(grep -E -o "PORT=[0-9]+" "$CONFIG_FILE_PATH" | grep -E -o "[0-9]+")
-PASSWORD=$(grep -E -o "PASSWORD=.{5,40}" "$CONFIG_FILE_PATH" | grep -E -o "=.+" | grep -E -o "[a-zA-Z0-9]+")
+PASSWORD=$(grep -E -o "PASSWORD=.{5,40}$" "$CONFIG_FILE_PATH" | grep -E -o "=.+" | grep -E -o "[a-zA-Z0-9]+")
 MODE=$(grep -E -o "MODE=[a-zA-Z]+" "$CONFIG_FILE_PATH" | grep -E -o "=.+" | grep -E -o "[a-zA-Z]+")
 LOG_FILE_MAX_SIZE=$(grep -E -o "LOG_FILE_MAX_SIZE=[0-9]+" "$CONFIG_FILE_PATH" | grep -E -o "[0-9]+")
 TRACE=$(grep -E -o "TRACE=[a-zA-Z]+" "$CONFIG_FILE_PATH" | grep -E -o "=.+" | grep -E -o "[a-zA-Z]+")
@@ -38,8 +38,8 @@ TRACE=$(grep -E -o "TRACE=[a-zA-Z]+" "$CONFIG_FILE_PATH" | grep -E -o "=.+" | gr
 VALID_MODE_1=loop
 VALID_MODE_2=oneshot
 
-VALID_TRACE_1=on
-VALID_TRACE_2=off
+VALID_TRACE_STATUS_1=on
+VALID_TRACE_STATUS_2=off
 
 
 #******************* ПРОЦЕДУРЫ ******************#
@@ -81,8 +81,8 @@ if [ -z "$LOG_FILE_MAX_SIZE" ]; then
     exit
 fi
 
-## Проверка заданного в настроечном файле статуса скрипта автоматического отслеживания CLOSE-WAIT'ов.
-if [ "$TRACE" != "$VALID_TRACE_1" ] && [ "$TRACE" != "$VALID_TRACE_2" ]; then
+## Проверка заданного в настроечном файле статуса автоматического отслеживания CLOSE-WAIT'ов.
+if [ "$TRACE" != "$VALID_TRACE_STATUS_1" ] && [ "$TRACE" != "$VALID_TRACE_STATUS_2" ]; then
     echo -e "Error: valid status for CLOSE-WAIT tracing script is not specified in the config file."
     echo -e "Please edit $CONFIG_FILE_PATH and specify a status (valid options are \"on\" and \"off\")."
     exit
@@ -118,7 +118,8 @@ fi
 ## Запуск скрипта автоматического отслеживания CLOSE-WAIT'ов
 if [ "$TRACE" = "on" ]; then
     nohup $TRACE_SCRIPT_FILE_PATH\
-          "exec_bin" "run_script" "log_flush"\
+          ## Ограничение в 15 символов обусловлено ограничениями утилит pgrep и pkill.
+          "exec_bin_server" "run_script_serv" "log_flush_serve"\
           $RUN_SCRIPT_FILE_PATH $LOG_FILE_PATH\
           >> /dev/null 2>&1 &
 fi

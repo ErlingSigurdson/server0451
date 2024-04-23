@@ -42,11 +42,11 @@ while true; do
     if [ $EXEC_BIN_IS_RUNNING -le 0 ] && [ $RUN_SCRIPT_IS_RUNNING -le 0 ] &&\
        [ $LOG_FLUSH_SCRIPT_IS_RUNNING -le 0 ] && [ $RESTART_DUE -gt 0 ]; then
         $RUN_SCRIPT_FILE_PATH &
-        echo -e "----------------------------------------------------------------------------------------"\
+        echo -e "---------------------------------------------------------------------------------------"\
         >> $LOG_FILE_PATH
         date -u +"Restarting server due to CLOSE-WAIT clogging. Date: %d.%m.%Y, time (UTC+0): %H:%M:%S."\
         >> $LOG_FILE_PATH
-        echo -e "----------------------------------------------------------------------------------------"\
+        echo -e "---------------------------------------------------------------------------------------"\
         >> $LOG_FILE_PATH
         RESTART_DUE=0
         exit
