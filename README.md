@@ -36,10 +36,10 @@
 Двоеточия означают буквально двоеточия.
 
 Перечень директив, на которые реагирует сервер, закрытый:
-- "AT+SETLOAD=ON" - размещает в топике строку "AT+SETLOAD=ON" (команда включения нагрузки);
-- "AT+SETLOAD=OFF" - размещает в топике строку "AT+SETLOAD=OFF" (команда выключения нагрузки);
-- "AT+SETLOAD=TOGGLE" - размещает в топике строку, соответствующую команде, противоположной ныне размещённой.
-- "AT+SERVETOPIC" - направляет клиенту текущее содержимое топика.
+- `AT+SETLOAD=ON` - размещает в топике строку "AT+SETLOAD=ON" (команда включения нагрузки).
+- `AT+SETLOAD=OFF` - размещает в топике строку "AT+SETLOAD=OFF" (команда выключения нагрузки).
+- `AT+SETLOAD=TOGGLE` - размещает в топике строку, соответствующую команде, противоположной ныне размещённой.
+- `AT+SERVETOPIC` - направляет клиенту текущее содержимое топика.
 
 ### Команда запуска
 Общий вид команды запуска сервера следующий:
@@ -97,6 +97,23 @@ grep -in "timeout" log_server0451
 опции "TRACE", одновременно будет запущен скрипт оболочки, который перезапустит сервер при обнаружении таких
 зависших соединений.
 
+### server0451 как служба systemd
+Если вы захотите поэкспериментировать и запустить сервер как службу systemd, unit-файл может выглядеть примерно
+следующим образом:
+```
+[Unit]
+Description=A simple TCP IoT server.
+After=default.target
+
+[Service]
+Type=simple
+ExecStart=sudo %h/server0451/.bin/exec_bin_server0451 -p 451 -P admin -V
+StandardOutput=file:%h/server0451/.log/log_server0451
+Restart=always
+
+[Install]
+WantedBy=default.target
+```
 
 # Справедливые вопросы
 ### Почему "0451"?
@@ -122,4 +139,4 @@ grep -in "timeout" log_server0451
 
 # Note for English speakers
 Please note that help page is written in English. Run binary executable file with an `-h` argument to read it
-or refer to `help_pa[<64;113;32Mge.h`.
+or refer to `help_page.h`.
