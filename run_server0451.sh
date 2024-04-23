@@ -119,7 +119,7 @@ fi
 if [ "$TRACE" = "on" ]; then
     nohup $TRACE_SCRIPT_FILE_PATH\
           ## Ограничение в 15 символов обусловлено ограничениями утилит pgrep и pkill.
-          "exec_bin_server" "run_script_serv" "log_flush_serve"\
+          "exec_bin_server" "run_server0451" "log_flush_serve"\
           $RUN_SCRIPT_FILE_PATH $LOG_FILE_PATH\
           >> /dev/null 2>&1 &
 fi
