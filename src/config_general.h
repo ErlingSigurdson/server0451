@@ -33,7 +33,7 @@
 #define SOCKET_BACKLOG 128
 
 // Длительность таймаута для функции select().
-#define SELECT_TIMEOUT_SEC  10
+#define SELECT_TIMEOUT_SEC 10
 
 // Длительность (в миллисекундах) паузы перед и после закрытия сокета.
 #define SOCKET_CLOSE_PAUSE 50000
