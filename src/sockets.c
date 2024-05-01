@@ -21,6 +21,7 @@
 // Из библиотек POSIX.
 #include <unistd.h>
 #include <netinet/in.h>
+#include <signal.h>
 
 /* Эти заголовочные файлы упоминаются в примерах серверов, написанных
  * на языке Си, но код компилируется и работает и без них. Оставляю на память.
@@ -230,4 +231,9 @@ int32_t sockets_close(int32_t fd, uint32_t pause)
     usleep(pause);
 
     return retval;
+}
+
+void sockets_sig_ign()
+{
+    signal(SIGPIPE, SIG_IGN);
 }

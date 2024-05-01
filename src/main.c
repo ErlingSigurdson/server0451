@@ -101,6 +101,9 @@ int32_t main(int32_t argc, char *argv[])
 
     /*--- Работа с сокетами ---*/
 
+    // Отключение сигнала SIGPIPE на случай, если клиент отключится до вызова функции write().
+    sockets_sig_ign();
+
     // Создание и подготовка "слушающего" сокета.
     int32_t sockfd = -1;  // По умолчанию задано невалидное значение.
     uint32_t sockets_init_retval = sockets_init(&sockfd, port, SOCKET_BACKLOG, verbosity_level);
