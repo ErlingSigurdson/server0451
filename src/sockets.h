@@ -46,6 +46,7 @@ uint32_t sockets_proceed(int32_t sockfd, int32_t *connfd, uint32_t timeout_sec, 
 void sockets_read_message(int32_t connfd, char *buf, size_t buf_size, uint32_t verbosity_level);
 void sockets_write_message(int32_t connfd, char *buf, uint32_t verbosity_level);
 int32_t sockets_close(int32_t fd, uint32_t pause);
+void sockets_report_broken_pipe(int32_t sig);
 void sockets_sig_ign();
 
 

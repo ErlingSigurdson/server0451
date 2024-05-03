@@ -233,7 +233,15 @@ int32_t sockets_close(int32_t fd, uint32_t pause)
     return retval;
 }
 
+void sockets_report_broken_pipe(int32_t sig)
+{
+    if (sig == SIGPIPE) {
+        fprintf(stderr, "\n"
+                        "Error: a client had disconnected before any response was sent by the server (broken pipe).\n");
+    }
+}
+
 void sockets_sig_ign()
 {
-    signal(SIGPIPE, SIG_IGN);
+    signal(SIGPIPE, sockets_report_broken_pipe);
 }

@@ -12,6 +12,8 @@ RUN_SCRIPT_FILE_NAME=run_server0451.sh
 LOG_FLUSH_SCRIPT_FILE_NAME=log_flush_server0451.sh
 TRACE_SCRIPT_FILE_NAME=trace_server0451.sh
 
+KILL_SCRIPT_FILE_NAME=kill_server0451.sh
+
 
 #--- Пути к файлам ---#
 
@@ -25,6 +27,8 @@ LOG_FILE_PATH="$THIS_SCRIPT_DIR_PATH/.log/$LOG_FILE_NAME"
 RUN_SCRIPT_FILE_PATH="$THIS_SCRIPT_FILE_PATH"
 LOG_FLUSH_SCRIPT_FILE_PATH="$THIS_SCRIPT_DIR_PATH/.sh/$LOG_FLUSH_SCRIPT_FILE_NAME"
 TRACE_SCRIPT_FILE_PATH="$THIS_SCRIPT_DIR_PATH/.sh/$TRACE_SCRIPT_FILE_NAME"
+
+KILL_SCRIPT_FILE_PATH="$THIS_SCRIPT_DIR_PATH/$KILL_SCRIPT_FILE_NAME"
 
 
 #--- Прочее ---#
@@ -96,7 +100,12 @@ if [ ! -e "$LOG_FILE_PATH" ]; then
 fi
 
 
-#--- Запуск ---#
+#--- Остановка ранее запущенного сервера ---#
+
+$KILL_SCRIPT_FILE_PATH > /dev/null 2>&1
+
+
+#--- Запуск сервера ---#
 
 ## Запуск сервера в циклическом режиме (основной режим).
 if [ "$MODE" = "loop" ]; then
@@ -120,6 +129,6 @@ if [ "$TRACE" = "on" ]; then
     nohup $TRACE_SCRIPT_FILE_PATH\
           "exec_bin_server" "run_server0451" "log_flush_serve"\
           $RUN_SCRIPT_FILE_PATH $LOG_FILE_PATH\
-          >> /dev/null 2>&1 &
+          > /dev/null 2>&1 &
           ## Ограничение в 15 символов обусловлено ограничениями утилит pgrep и pkill.
 fi
