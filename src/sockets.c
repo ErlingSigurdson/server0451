@@ -38,7 +38,6 @@
 #include "utilities.h"
 #include "timestamp.h"
 
-
 /******************** ФУНКЦИИ *******************/
 
 uint32_t sockets_init(int32_t *sockfd, int32_t port, uint32_t numconn, uint32_t verbosity_level)
@@ -186,9 +185,7 @@ uint32_t sockets_proceed(int32_t sockfd, int32_t *connfd, uint32_t timeout_sec, 
     } else if (result == 0) {
         retval = SOCKETS_PROCEED_TIMEOUT;
         if (verbosity_level > 0) {
-            printf("\nConnection closed due to timeout. ");
-            timestamp_print();
-            printf(".\n");
+            printf("\nConnection closed due to timeout.\n");
         }
     } else if (result > 0) {
         retval = SOCKETS_PROCEED_OK;
