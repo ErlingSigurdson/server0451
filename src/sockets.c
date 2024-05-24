@@ -164,6 +164,7 @@ uint32_t sockets_proceed(int32_t sockfd, int32_t *connfd, uint32_t timeout_sec, 
         printf("\nServer accepted a client, waiting for incoming data. ");
         timestamp_print();
         printf(".\n");
+        fflush(stdout);
     }
 
 
