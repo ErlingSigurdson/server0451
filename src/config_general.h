@@ -42,9 +42,9 @@
 #define SOCKET_GRACEFUL_CLOSE_ATTEMPTS 30
 
 // Команды.
-#define CMD_LOAD_ON       "AT+SETLOAD=ON"
-#define CMD_LOAD_OFF      "AT+SETLOAD=OFF"
-#define CMD_LOAD_TOGGLE   "AT+SETLOAD=TOGGLE"
+#define CMD_LOAD_ON       "AT+LOADDIGITAL=ON"
+#define CMD_LOAD_OFF      "AT+LOADDIGITAL=OFF"
+#define CMD_LOAD_TOGGLE   "AT+LOADDIGITAL=TOGGLE"
 #define CMD_TOPIC_REQUEST "AT+SERVETOPIC"
 
 // Формат, которому должны следовать сообщения от клиентов.
