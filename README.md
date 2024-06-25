@@ -136,6 +136,9 @@ WantedBy=default.target
 Исходный код на языке Си и скрипты оболочки написаны с соблюдением стандарта POSIX, поэтому совместимость
 предполагается. Но это не точно. 
 
+### Совместимо ли это ПО с cygwin?
+Да, но из всех файлов со скриптами оболочки потребуется убрать sudo.
+
 
 # Note for English speakers
 Please note that help page is written in English. Run binary executable file with an `-h` argument to read it
