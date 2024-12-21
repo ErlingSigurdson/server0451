@@ -12,7 +12,7 @@ RUN_SCRIPT_FILE_NAME=run_server0451.sh
 LOG_FLUSH_SCRIPT_FILE_NAME=log_flush_server0451.sh
 TRACE_SCRIPT_FILE_NAME=trace_server0451.sh
 
-KILL_SCRIPT_FILE_NAME=kill_server0451.sh
+KILL_SCRIPT_FILE_NAME=pkill_server0451.sh
 
 
 #--- Пути к файлам ---#
@@ -49,6 +49,12 @@ VALID_TRACE_STATUS_2=off
 #******************* ПРОЦЕДУРЫ ******************#
 
 #--- Проверки ---#
+
+## Проверка прав root.
+if [ "$EUID" -ne 0 ]
+    then echo "Please run this script again as root."
+    exit
+fi
 
 ## Проверка на наличие исполняемого бинарного файла в соответствующей директории.
 if [ ! -e "$EXEC_BIN_FILE_PATH" ]; then
@@ -110,13 +116,13 @@ $KILL_SCRIPT_FILE_PATH > /dev/null 2>&1
 ## Запуск сервера в циклическом режиме (основной режим).
 if [ "$MODE" = "loop" ]; then
     echo -e "server0451 started in a loop mode at port $PORT."
-    nohup sudo $EXEC_BIN_FILE_PATH -p $PORT -P $PASSWORD -V >> $LOG_FILE_PATH 2>&1 &
+    nohup $EXEC_BIN_FILE_PATH -p $PORT -P $PASSWORD -V >> $LOG_FILE_PATH 2>&1 &
 fi
 
 ## Запуск сервера в режиме одиночного прогона (тестовый режим).
 if [ "$MODE" = "oneshot" ]; then
     echo "server0451 started in a oneshot mode at port $PORT."
-    sudo $EXEC_BIN_FILE_PATH -p $PORT -P $PASSWORD -o -V
+    $EXEC_BIN_FILE_PATH -p $PORT -P $PASSWORD -o -V
 fi
 
 ## Запуск скрипта очистки логов сервера.
@@ -127,8 +133,7 @@ fi
 ## Запуск скрипта автоматического отслеживания CLOSE-WAIT'ов
 if [ "$TRACE" = "on" ]; then
     nohup $TRACE_SCRIPT_FILE_PATH\
-          "exec_bin_server" "run_server0451" "log_flush_serve"\
+          "exec_bin_server0451" "run_server0451.sh" "log_flush_server0451.sh"\
           $RUN_SCRIPT_FILE_PATH $LOG_FILE_PATH\
           > /dev/null 2>&1 &
-          ## Ограничение в 15 символов обусловлено ограничениями утилит pgrep и pkill.
 fi

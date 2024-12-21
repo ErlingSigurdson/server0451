@@ -27,15 +27,13 @@ RESTART_DUE=0
 
 while true; do
     CLOSE_WAIT_DETECTED=$(sudo ss -tapn | grep -E -c "CLOSE-WAIT")
-    EXEC_BIN_IS_RUNNING=$(pgrep -c "$PATTERN_1")
-    RUN_SCRIPT_IS_RUNNING=$(pgrep -c "$PATTERN_2")
-    LOG_FLUSH_SCRIPT_IS_RUNNING=$(pgrep -c "$PATTERN_3")
+    EXEC_BIN_IS_RUNNING=$(pgrep -fc "$PATTERN_1")
+    RUN_SCRIPT_IS_RUNNING=$(pgrep -fc "$PATTERN_2")
+    LOG_FLUSH_SCRIPT_IS_RUNNING=$(pgrep -fc "$PATTERN_3")
     
     if [ $CLOSE_WAIT_DETECTED -gt $CLOSE_WAIT_THRESHOLD ]; then
         echo "CLOSE-WAIT clogging detected." >> $LOG_FILE_PATH
-        sudo pkill -9 "$PATTERN_1"
-        sudo pkill -9 "$PATTERN_2"
-        sudo pkill -9 "$PATTERN_3"
+        pkill -f -9 "($PATTERN_1|$PATTERN_2|$PATTERN_3)"
         RESTART_DUE=1
     fi
 
