@@ -13,6 +13,4 @@ PATTERN_3="trace_server0451.sh"
 
 #--- Вывод информации о процессах в терминал ---#
 
-pgrep -fa "$PATTERN_1"
-pgrep -fa "$PATTERN_2"
-pgrep -fa "$PATTERN_3"
+pgrep -fa "($PATTERN_1|$PATTERN_2|$PATTERN_3)"
