@@ -62,7 +62,7 @@ puts("where"); \
 puts("    password       - is a password you've specified in a config file."); \
 puts("    X              - is an integer value from 1 to 100."); \
 puts("    directive_text - is one of the directives listed in config_general.h:"); \
-puts("                      AT+SETLOAD=ON, AT+SETLOAD=OFF, AT+SETLOAD=TOGGLE, AT+SERVETOPIC."); \
+puts("                     AT+LOADDIGITAL=ON, AT+LOADDIGITAL=OFF, AT+LOADDIGITALTOGGLE, AT+SERVETOPIC."); \
 puts(""); \
 puts("Server logs are stored in /server0451/.log/log_server0451."); \
 puts(""); \
