@@ -130,7 +130,7 @@ if [ "$MODE" = "loop" ]; then
     nohup $LOG_FLUSH_SCRIPT_FILE_PATH $LOG_FILE_MAX_SIZE $LOG_FILE_PATH > /dev/null 2>&1 &
 fi
 
-## Запуск скрипта автоматического отслеживания CLOSE-WAIT'ов
+## Запуск скрипта автоматического отслеживания CLOSE-WAIT'ов.
 if [ "$TRACE" = "on" ]; then
     nohup $TRACE_SCRIPT_FILE_PATH\
           "exec_bin_server0451" "run_server0451.sh" "log_flush_server0451.sh"\
