@@ -13,8 +13,8 @@ PATTERN_3="trace_server0451.sh"
 
 #--- Проверка прав root ---#
 
-if [ "$EUID" -ne 0 ]
-    then echo "Please run this script again as root."
+if [ "$EUID" -ne 0 ]; then
+    echo "Please run this script again as root."
     exit
 fi
 

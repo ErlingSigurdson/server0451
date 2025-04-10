@@ -4,15 +4,15 @@
 
 #--- Названия файлов ---#
 
-EXEC_BIN_FILE_NAME=exec_bin_server0451
-CONFIG_FILE_NAME=config_server0451
-LOG_FILE_NAME=log_server0451
+EXEC_BIN_FILE_NAME="exec_bin_server0451"
+CONFIG_FILE_NAME="config_server0451"
+LOG_FILE_NAME="log_server0451"
 
-RUN_SCRIPT_FILE_NAME=run_server0451.sh
-LOG_FLUSH_SCRIPT_FILE_NAME=log_flush_server0451.sh
-TRACE_SCRIPT_FILE_NAME=trace_server0451.sh
+RUN_SCRIPT_FILE_NAME="run_server0451.sh"
+LOG_FLUSH_SCRIPT_FILE_NAME="log_flush_server0451.sh"
+TRACE_SCRIPT_FILE_NAME="trace_server0451.sh"
 
-KILL_SCRIPT_FILE_NAME=pkill_server0451.sh
+KILL_SCRIPT_FILE_NAME="pkill_server0451.sh"
 
 
 #--- Пути к файлам ---#
@@ -33,11 +33,11 @@ KILL_SCRIPT_FILE_PATH="$THIS_SCRIPT_DIR_PATH/$KILL_SCRIPT_FILE_NAME"
 
 #--- Прочее ---#
 
-PORT=$(grep -E -o "PORT=[0-9]+" "$CONFIG_FILE_PATH" | grep -E -o "[0-9]+")
-PASSWORD=$(grep -E -o "PASSWORD=.{5,40}$" "$CONFIG_FILE_PATH" | grep -E -o "=.+" | grep -E -o "[a-zA-Z0-9]+")
-MODE=$(grep -E -o "MODE=[a-zA-Z]+" "$CONFIG_FILE_PATH" | grep -E -o "=.+" | grep -E -o "[a-zA-Z]+")
-LOG_FILE_MAX_SIZE=$(grep -E -o "LOG_FILE_MAX_SIZE=[0-9]+" "$CONFIG_FILE_PATH" | grep -E -o "[0-9]+")
-TRACE=$(grep -E -o "TRACE=[a-zA-Z]+" "$CONFIG_FILE_PATH" | grep -E -o "=.+" | grep -E -o "[a-zA-Z]+")
+PORT=$(grep -Eo "PORT=[0-9]+" "$CONFIG_FILE_PATH" | grep -Eo "[0-9]+")
+PASSWORD=$(grep -Eo "PASSWORD=.{5,40}$" "$CONFIG_FILE_PATH" | grep -Eo "=.+" | grep -Eo "[a-zA-Z0-9]+")
+MODE=$(grep -Eo "MODE=[a-zA-Z]+" "$CONFIG_FILE_PATH" | grep -Eo "=.+" | grep -Eo "[a-zA-Z]+")
+LOG_FILE_MAX_SIZE=$(grep -Eo "LOG_FILE_MAX_SIZE=[0-9]+" "$CONFIG_FILE_PATH" | grep -Eo "[0-9]+")
+TRACE=$(grep -Eo "TRACE=[a-zA-Z]+" "$CONFIG_FILE_PATH" | grep -Eo "=.+" | grep -Eo "[a-zA-Z]+")
 
 VALID_MODE_1=loop
 VALID_MODE_2=oneshot
@@ -51,8 +51,8 @@ VALID_TRACE_STATUS_2=off
 #--- Проверки ---#
 
 ## Проверка прав root.
-if [ "$EUID" -ne 0 ]
-    then echo "Please run this script again as root."
+if [ "$EUID" -ne 0 ]; then
+    echo "Please run this script again as root."
     exit
 fi
 

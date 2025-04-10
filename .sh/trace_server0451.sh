@@ -11,11 +11,14 @@ LOG_FILE_PATH=$5
 
 #--- Прочее ---#
 
-PATTERN_1=$1
-PATTERN_2=$2
-PATTERN_3=$3
+# "exec_bin_server0451" и префикс в виде названия директории.
+PATTERN_1="\.bin\/$1"
+# "run_server0451.sh" и префикс в виде названия директории.
+PATTERN_2="\.sh\/$2"
+# "log_flush_server0451.sh" и префикс в виде названия директории.
+PATTERN_3="\.sh\/$3"
 
-CLOSE_WAIT_THRESHOLD=1
+CLOSE_WAIT_THRESHOLD=3
 PAUSE=3
 
 
@@ -26,15 +29,15 @@ PAUSE=3
 RESTART_DUE=0
 
 while true; do
-    CLOSE_WAIT_DETECTED=$(sudo ss -tapn | grep -E -c "CLOSE-WAIT")
+    CLOSE_WAIT_DETECTED=$(sudo ss -tapn | grep -Ec "CLOSE-WAIT")
     EXEC_BIN_IS_RUNNING=$(pgrep -fc "$PATTERN_1")
     RUN_SCRIPT_IS_RUNNING=$(pgrep -fc "$PATTERN_2")
     LOG_FLUSH_SCRIPT_IS_RUNNING=$(pgrep -fc "$PATTERN_3")
     
     if [ $CLOSE_WAIT_DETECTED -gt $CLOSE_WAIT_THRESHOLD ]; then
         echo "CLOSE-WAIT clogging detected." >> $LOG_FILE_PATH
-        pkill -f -9 "($PATTERN_1|$PATTERN_2|$PATTERN_3)"
         RESTART_DUE=1
+        pkill -f -9 "($PATTERN_1|$PATTERN_2|$PATTERN_3)"
     fi
 
     if [ $EXEC_BIN_IS_RUNNING -le 0 ] && [ $RUN_SCRIPT_IS_RUNNING -le 0 ] &&\
