@@ -134,6 +134,6 @@ fi
 if [ "$TRACE" = "on" ]; then
     nohup $TRACE_SCRIPT_FILE_PATH\
           "exec_bin_server0451" "run_server0451.sh" "log_flush_server0451.sh"\
-          $RUN_SCRIPT_FILE_PATH $LOG_FILE_PATH\
+          $RUN_SCRIPT_FILE_PATH $LOG_FILE_PATH $PORT\
           > /dev/null 2>&1 &
 fi

@@ -18,7 +18,9 @@ PATTERN_2="\.sh\/$2"
 # "log_flush_server0451.sh" и префикс в виде названия директории.
 PATTERN_3="\.sh\/$3"
 
-CLOSE_WAIT_THRESHOLD=3
+PORT=$6
+
+CLOSE_WAIT_THRESHOLD=1
 PAUSE=3
 
 
@@ -29,7 +31,7 @@ PAUSE=3
 RESTART_DUE=0
 
 while true; do
-    CLOSE_WAIT_DETECTED=$(sudo ss -tapn | grep -Ec "CLOSE-WAIT")
+    CLOSE_WAIT_DETECTED=$(sudo ss -tapn | grep -Ec "CLOSE-WAIT.*$PORT")
     EXEC_BIN_IS_RUNNING=$(pgrep -fc "$PATTERN_1")
     RUN_SCRIPT_IS_RUNNING=$(pgrep -fc "$PATTERN_2")
     LOG_FLUSH_SCRIPT_IS_RUNNING=$(pgrep -fc "$PATTERN_3")
