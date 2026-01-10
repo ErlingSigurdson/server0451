@@ -192,6 +192,34 @@ int32_t main(int32_t argc, char *argv[])
         sockets_read_message(connfd, buf, sizeof(buf), verbosity_level);
         flush_all();
 
+        strcpy(buf, "HTTP/1.1 200 OK\r\n");
+        //strcat(buf, "Content-Length: 53\r\n");
+        strcat(buf, "Content-Type: text/html; charset=utf-8\r\n\r\n");
+        strcat(buf, "<!DOCTYPE html>"
+                        "<html lang=\"en\">"
+                        "<head>"
+                            "<meta charset=\"utf-8\">"
+                            "<title>title</title>"
+                            "<style>p {color: red;}</style>"
+                        "</head>"
+                        "<body>"
+                            "<p>");
+
+        char time_buf[STR_MAX_LEN + 1] = {0};
+        timestamp_sprint(time_buf);
+        strcat(buf, time_buf);
+        //strcat(buf, "\r\n");
+
+        strcat(buf,         "</p>"
+                        "</body>"
+                    "</html>");
+        
+        sockets_write_message(connfd, buf, 0);
+        
+        finish_communication(connfd, SOCKET_GRACEFUL_CLOSE_ATTEMPTS, SOCKET_CLOSE_PAUSE, verbosity_level);
+        flush_all();
+        continue;
+
 
         /*--- Проверка формата сообщения от клиента ---*/
 

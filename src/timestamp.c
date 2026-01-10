@@ -40,3 +40,16 @@ void timestamp_print()
     strftime(buf, sizeof(buf), "Date: %d.%m.%Y, time (UTC+0): %H:%M:%S", time_fields);
     printf("%s", buf);
 }
+
+void timestamp_sprint(char *buf)
+{
+    char local_buf[STR_MAX_LEN + 1] = {0};
+    time_t posix_time;
+    struct tm *time_fields;
+
+    posix_time = time(NULL);
+    time_fields = localtime(&posix_time);
+
+    strftime(local_buf, sizeof(local_buf), "Date: %d.%m.%Y, time (UTC+0): %H:%M:%S", time_fields);
+    sprintf(buf, "%s", local_buf);
+}
