@@ -198,7 +198,7 @@ uint32_t sockets_proceed(int32_t sockfd, int32_t *connfd, uint32_t timeout_sec, 
 void sockets_read_message(int32_t connfd, char *buf, size_t buf_size, uint32_t verbosity_level)
 {
     // Чтение сообщения от клиента и его запись в буфер.
-    read(connfd, buf, buf_size);
+    read(connfd, buf, buf_size - 1);
     utilities_nullify_all_trailing_CR_and_LF_in_string(buf);
 
     // Вывод содержимого буфера.
