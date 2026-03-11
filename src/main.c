@@ -30,6 +30,7 @@
 
 // Локальные модули.
 #include "sockets.h"
+#include "http.h"
 #include "cmd.h"
 #include "msg_format_check.h"
 #include "timestamp.h"
@@ -198,6 +199,12 @@ int32_t main(int32_t argc, char *argv[])
         char resulting_pattern[STR_MAX_LEN * 2 + 1] = {0};
         strcpy(resulting_pattern, password);
         strcat(resulting_pattern, MSG_FORMAT_REGEX_PATTERN);
+
+        char buf_http[STR_MAX_LEN + 1] = {0};
+        if (looks_like_http_request(buf)) {
+            extract_http_payload(buf, buf_http, sizeof(buf_http) - 1);
+            strcpy(buf, buf_http);
+        }
 
         uint32_t msg_format_check_retval = msg_format_check(buf, resulting_pattern);
         switch (msg_format_check_retval) {
