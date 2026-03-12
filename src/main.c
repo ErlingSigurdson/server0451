@@ -200,8 +200,8 @@ int32_t main(int32_t argc, char *argv[])
         strcpy(resulting_pattern, password);
         strcat(resulting_pattern, MSG_FORMAT_REGEX_PATTERN);
 
-        char buf_http[STR_MAX_LEN + 1] = {0};
         if (looks_like_http_request(buf)) {
+            char buf_http[STR_MAX_LEN + 1] = {0};
             extract_http_payload(buf, buf_http, sizeof(buf_http) - 1);
             strcpy(buf, buf_http);
         }
